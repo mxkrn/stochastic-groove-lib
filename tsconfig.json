@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        // "declaration": true,
+        // "declarationMap": true,
+        // "inlineSourceMap": true,
+        // "inlineSources": true,
+        "sourceMap": true,
+        "esModuleInterop": true
+    }
+}

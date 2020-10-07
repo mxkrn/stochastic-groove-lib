@@ -1,0 +1,7 @@
+allow-uncaught: true
+extension:
+  - 'js'
+reporter: 'spec'
+require: 'ts-node/register'
+spec: 'src/tests/**/*.spec.ts'
+timeout: 10000
