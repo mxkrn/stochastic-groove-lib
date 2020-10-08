@@ -9,7 +9,13 @@
         // "declarationMap": true,
         // "inlineSourceMap": true,
         // "inlineSources": true,
+        "allowJs": true,
         "sourceMap": true,
-        "esModuleInterop": true
-    }
+        "esModuleInterop": true,
+    },
+    "exclude": [
+        "src/tests/",
+        "webpack.config.js", 
+        "dist"
+    ]
 }

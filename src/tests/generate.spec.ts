@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks';
 import LatentSpace from '../generate/main';
-import { getInput, getRequestBody } from './fixtures.spec';
+import { getRequestBody } from './fixtures.spec';
 
 let requestBody = getRequestBody();
 
@@ -13,6 +13,6 @@ describe('ONNXModel', function() {
         await latentSpace.populate();
         console.log('time to populate:', performance.now() - st);
         let data = latentSpace.data;
-        console.log(data);
+        console.log(Object.keys(data).length);
     })
 });
