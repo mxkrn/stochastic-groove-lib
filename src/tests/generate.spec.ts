@@ -13,6 +13,7 @@ describe('ONNXModel', function() {
         await latentSpace.populate();
         console.log('time to populate:', performance.now() - st);
         let data = latentSpace.data;
-        console.log(Object.keys(data).length);
+        console.log(`Number of data points: ${Object.keys(data).length}`);
+        console.log(`Example: ${data['0,0']}`)
     })
 });

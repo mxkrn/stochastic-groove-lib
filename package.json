@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha -r ts-node/register src/tests/**/*.spec.ts",
-    "build": "echo 'running tests...' && npm test && echo 'building...' && webpack",
+    "build webpack": "echo 'running tests...' && npm test && echo 'building...' && webpack",
+    "build": "rm -rf build && tsc",
     "watch": "tsc --watch"
   },
   "author": "Max Kraan",
