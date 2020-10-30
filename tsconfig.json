@@ -1,17 +1,16 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "module": "CommonJS",
         "moduleResolution": "Node",
-        "outDir": "./build",
+        "outDir": "./dist",
         "rootDir": "./src",
-        // "allowJs": true,
-        // "sourceMap": true,
+        "allowJs": false,
         "esModuleInterop": true,
+        "declaration": true
     },
     "exclude": [
         "src/tests/",
-        "webpack.config.js", 
         "dist"
     ]
 }

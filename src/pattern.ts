@@ -1,6 +1,10 @@
-import { SEQUENCE_LENGTH , NUM_INSTRUMENTS } from './constants';
+const JZZ = require('jzz');
+require('jzz-midi-smf')(JZZ);
 
-class ConverterTensor {
+import { LOOP_DURATION , NUM_DRUM_TRACKS, STEPS_PER_QUARTER } from './constants';
+import { converterMap, signedMod } from './util';
+
+class PatternBuffer {
     /**
      * This class exists to convert between three ways to represent our data:
      *          
@@ -20,10 +24,12 @@ class ConverterTensor {
     public sequenceLength: number;
     public instruments: number;
     private _pattern: Array<Array<number>>; 
+    private _velocities: Array<Array<number>>; 
+    private _offsets: Array<Array<number>>; 
     private _buffer: Float32Array;
     private _indices: Float32Array;
 
-    constructor(input, sequenceLength: number = SEQUENCE_LENGTH, instruments: number = NUM_INSTRUMENTS) {
+    constructor(input, sequenceLength: number = LOOP_DURATION, instruments: number = NUM_DRUM_TRACKS) {
         this.sequenceLength = sequenceLength;
         this.instruments = instruments;
         if (input.length == this.sequenceLength) {
@@ -51,6 +57,28 @@ class ConverterTensor {
     }
     get indices() {
         return this._indices;
+    }
+    static async from_midi(midiBuffer, pitchMapping) {
+        /**
+         * Construct the PatternBuffer class from a midi buffer
+         */
+        let pattern = Array.from({ length: NUM_DRUM_TRACKS }, _ => {
+            let array = Array.from({ length: LOOP_DURATION }, _ => 0);
+            return array;
+        })
+        const midiSMF = new JZZ.MIDI.SMF(midiBuffer);
+        let promises = midiSMF.map((seq) => {
+            for (let j = 0; j < seq.length; j++) {
+                let note = seq[j];
+                if (note['0'] == 144) {
+                    let step = Math.round(note.tt / (STEPS_PER_QUARTER / 4));
+                    let channel = pitchMapping[note['1'].toString()]
+                    pattern[channel][step] = 1;
+                }
+            }
+        });
+        await Promise.all(promises);
+        return new PatternBuffer(pattern);
     }
     _from_pattern(pattern: Array<Array<number>>): Float32Array {
         /**
@@ -127,59 +155,4 @@ class ConverterTensor {
     }
 }
 
-export default ConverterTensor;
-
-/**
- * ========================
- * Utility functions
- * ========================
- */
-function converterMap(n: number, inverse: boolean): object {
-    /**
-     * Generate all binary permutations of pattern length n
-     * 
-     *      n = 2 -> ['00', '01', '10', '11']
-     * 
-     * @param {*} n pattern length
-     */
-    const patterns = {}
-
-    let vocab_size = Math.pow(2, n);
-    for (let i = 0; i < vocab_size; i++) {
-        const s = bin(i)
-        let out = "";
-        for (let j = 0; j < (n - s.length); j++) {
-            out += "0";
-        }
-        out += s;
-        let tensor = string_to_tensor(out);
-        if (inverse) {
-            patterns[i] = tensor;
-        } else {
-            patterns[tensor.toString()] = i;
-        }
-    }
-    return patterns;
-}
-export { converterMap };
-
-function bin(n: number): string {
-    /**
-     * Convert decimal to binary
-     */
-    if (n < 0) {
-        n = 0xFFFFFFFF + n + 1;
-    } 
-    return parseInt(n.toString(), 10).toString(2);
-}  
-
-function string_to_tensor(s: string) {
-    /**
-     * Convert string to Array
-     */
-    let tensor = [];
-    for (let i = 0; i < s.length; i++) {
-        tensor.push(parseFloat(s[i]));
-    }
-    return tensor;
-}
+export default PatternBuffer;

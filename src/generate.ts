@@ -2,11 +2,11 @@ import path from 'path';
 // import async from 'async';
 
 import ONNXModel from './model';
-import ConverterTensor from './tensor';
-import { DEFAULT_MODEL, SEQUENCE_LENGTH, NUM_INSTRUMENTS } from './constants';
+import PatternBuffer from './pattern';
+import { DEFAULT_MODEL, LOOP_DURATION, NUM_DRUM_TRACKS } from './constants';
 
 
-class LatentSpace {
+class Generator {
     /**
      * This class wraps our loaded ONNX model and decodes based on incoming request data
      * @param model Instance of ONNXModel
@@ -21,7 +21,7 @@ class LatentSpace {
     sequenceLength: number;
     numSamples: number;
     noteDropout: number;
-    converterTensor: ConverterTensor;
+    converterTensor: PatternBuffer;
     latentVectors: Array<string>;
     _data: Object;
     
@@ -35,7 +35,7 @@ class LatentSpace {
         this.numSamples = numSamples;
         this.noteDropout = noteDropout;
         this.latentVectors = this._generateLatentVectors(numSamples);
-        this.converterTensor = new ConverterTensor(pattern);
+        this.converterTensor = new PatternBuffer(pattern);
         this._data = {};
     }
     get data() {
@@ -48,14 +48,11 @@ class LatentSpace {
         pattern: Float32Array, 
         numSamples: number = 400,
         noteDropout: number = 0.5, 
-        instruments: number = NUM_INSTRUMENTS,
-        sequenceLength: number = SEQUENCE_LENGTH): Promise<LatentSpace> {
+        instruments: number = NUM_DRUM_TRACKS,
+        sequenceLength: number = LOOP_DURATION): Promise<Generator> {
         try {
-            let model = await ONNXModel.build(
-                path.join(process.cwd(), DEFAULT_MODEL), 
-                instruments
-            );
-            return new LatentSpace(model, pattern, numSamples, noteDropout, instruments, sequenceLength);
+            let model = await ONNXModel.build();
+            return new Generator(model, pattern, numSamples, noteDropout, instruments, sequenceLength);
         } catch(e) {
             console.error('failed to load LatentSpace');
             throw new Error(e);
@@ -74,7 +71,7 @@ class LatentSpace {
         let promises = this.latentVectors.map(async(z) => {
             let delta_z = z.split(',').map((z_i) => { return parseFloat(z_i) });
             let output = await model.decode(inputTensor.indices, delta_z, noteDropout);
-            let outputTensor = new ConverterTensor(output);
+            let outputTensor = new PatternBuffer(output);
             data[z] = outputTensor.buffer;
         });
         await Promise.all(promises);
@@ -94,4 +91,4 @@ class LatentSpace {
     }
 }
 
-export default LatentSpace;
+export default Generator;

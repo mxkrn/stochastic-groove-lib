@@ -1,5 +1,9 @@
-import LatentSpace from './generate/main';
-import ConverterTensor from './generate/tensor';
-import ONNXModel from './generate/model';
+import Generator from './generate';
+import PatternBuffer from './pattern';
+import ONNXModel from './model';
 
-export { LatentSpace, ConverterTensor, ONNXModel };
+export {
+    Generator,
+    PatternBuffer,
+    ONNXModel
+};

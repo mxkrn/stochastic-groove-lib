@@ -1,5 +1,5 @@
 import { performance } from 'perf_hooks';
-import LatentSpace from '../generate/main';
+import LatentSpace from '../generate';
 import { getRequestBody } from './fixtures.spec';
 
 let requestBody = getRequestBody();

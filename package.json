@@ -1,27 +1,36 @@
 {
   "name": "stochastic-groove-lib",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Library code for stochastic groove application",
+  "homepage": "https://github.com/mxkrn/stochastic-groove-lib",
+  "bugs": {
+    "url": "https://github.com/mxkrn/stochastic-groove-lib/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/tests/**/*.spec.ts",
-    "build webpack": "echo 'running tests...' && npm test && echo 'building...' && webpack",
-    "build": "rm -rf build && tsc",
+    "build": "rm -rf dist && tsc",
     "watch": "tsc --watch"
   },
   "author": "Max Kraan",
-  "license": "ISC",
+  "license": "MIT",
+  "private": false,
+  "egines": {
+    "node": ">=12.0.0"
+  },
+  "engineStrict": true,
+  "prepublish": "tsc",
   "devDependencies": {
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.11.5",
     "mocha": "^8.1.3",
     "ts-loader": "^8.0.4",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.3",
-    "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12"
+    "typescript": "^4.0.3"
   },
   "dependencies": {
+    "jzz-midi-smf": "^1.4.0",
     "onnxruntime": "^1.5.1"
   }
 }

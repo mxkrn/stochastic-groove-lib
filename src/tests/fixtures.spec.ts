@@ -1,7 +1,7 @@
-import { SEQUENCE_LENGTH, NUM_INSTRUMENTS } from '../generate/constants';
+import { LOOP_DURATION, NUM_DRUM_TRACKS } from '../constants';
 
 function getInput() {
-    return Float32Array.from({ length: SEQUENCE_LENGTH*NUM_INSTRUMENTS}, (_, i) => 1);
+    return Float32Array.from({ length: LOOP_DURATION*NUM_DRUM_TRACKS}, (_, i) => 1);
 }
 
 function getRequestBody() {

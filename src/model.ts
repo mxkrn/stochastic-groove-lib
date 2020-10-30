@@ -1,6 +1,6 @@
 import { InferenceSession, Tensor } from 'onnxruntime';
 
-import { DEFAULT_MODEL, SEQUENCE_LENGTH } from './constants';
+import { DEFAULT_MODEL, LOOP_DURATION, NUM_DRUM_TRACKS } from './constants';
 
 
 class ONNXModel {
@@ -22,12 +22,12 @@ class ONNXModel {
         this.session = session;
         this.instruments = instruments;
         this.vocabSize = Math.pow(2, instruments);
-        this.sequenceLength = SEQUENCE_LENGTH;  // HARD-CODED SEQUENCE LENGTH TO 2 BARS
+        this.sequenceLength = LOOP_DURATION;  // HARD-CODED SEQUENCE LENGTH TO 2 BARS
     }
 
     static async build(
         fpath: string = DEFAULT_MODEL, 
-        instruments: number): Promise<ONNXModel> {
+        instruments: number = NUM_DRUM_TRACKS): Promise<ONNXModel> {
         /**
          * @param {*} fpath Path to ONNX model, default is FPATH
          */  
