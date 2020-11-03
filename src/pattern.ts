@@ -2,7 +2,7 @@ const JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
 import { LOOP_DURATION , NUM_DRUM_TRACKS, STEPS_PER_QUARTER } from './constants';
-import { converterMap, signedMod } from './util';
+import { converterMap } from './util';
 
 class PatternBuffer {
     /**
@@ -29,8 +29,8 @@ class PatternBuffer {
     private _buffer: Float32Array;
     private _indices: Float32Array;
 
-    constructor(input, sequenceLength: number = LOOP_DURATION, instruments: number = NUM_DRUM_TRACKS) {
-        this.sequenceLength = sequenceLength;
+    constructor(input, loopDuration: number = LOOP_DURATION, instruments: number = NUM_DRUM_TRACKS) {
+        this.sequenceLength = loopDuration;
         this.instruments = instruments;
         if (input.length == this.sequenceLength) {
             this._indices = input;

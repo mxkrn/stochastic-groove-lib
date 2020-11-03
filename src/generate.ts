@@ -1,9 +1,6 @@
-import path from 'path';
-// import async from 'async';
-
 import ONNXModel from './model';
 import PatternBuffer from './pattern';
-import { DEFAULT_MODEL, LOOP_DURATION, NUM_DRUM_TRACKS } from './constants';
+import { LOOP_DURATION, NUM_DRUM_TRACKS } from './constants';
 
 
 class Generator {
@@ -25,9 +22,16 @@ class Generator {
     latentVectors: Array<string>;
     _data: Object;
     
-    constructor(model: ONNXModel, pattern, numSamples, noteDropout, instruments, sequenceLength) {
+    constructor(
+        model: ONNXModel, 
+        pattern: Float32Array, 
+        numSamples: number, 
+        noteDropout: number, 
+        instruments: number, 
+        sequenceLength: number) {
+
         if (typeof model == "undefined") {
-            throw new Error('cannot directly access class constructor - use LatentSpace.build(<params>) instead.');
+            throw new Error('cannot directly access class constructor - use Generator.build(<params>) instead.');
         }
         this.model = model;
         this.instruments = instruments;
