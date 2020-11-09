@@ -1,4 +1,4 @@
-import Generator from './generate';
+import Generator from './generator';
 import PatternBuffer from './pattern';
 import ONNXModel from './model';
 

@@ -9,10 +9,7 @@ This is the core library of the application containing the API source code used 
 
 ### Usage
 
-Here a brief overview on the classes exposed via this API, more involved usage details can be found in the
-corresponding `Max for Live` patch.
-
-We use three different formats to represent our drum pattern, for inference using `ONNX`, reading and writing MIDI, and for storage and comms, respectively. The PatternBuffer constructor is overloaded to handle these input formats.
+Three different formats are used to represent our drum pattern, for inference using `ONNX`, reading and writing MIDI, and for storage and comms, respectively. The PatternBuffer constructor is overloaded to handle these input formats and allows easy access to all three formats using the provided getters.
 
 ```
 // Although it is allowed to use different values for channels and loopDuration, this ultimately depends on
@@ -20,6 +17,7 @@ We use three different formats to represent our drum pattern, for inference usin
 // does NOT support this
 const channels = 9;
 const loopDuration = 32;
+
 let buffer = new Float32Array(channels*loopDuration).fill(0);
 let patternBuffer = new PatternBuffer(buffer, loopDuration, channels);
 

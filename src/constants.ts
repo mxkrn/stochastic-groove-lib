@@ -1,6 +1,8 @@
 import path from 'path';
+import fs from 'fs';
 
-const DEFAULT_MODEL = path.dirname(__dirname) + '/assets/vae_gru_gmd_z=2_1600764564.onnx';
+const DEFAULT_MODEL = path.dirname(__dirname) + '/assets/models/latest.onnx';
+
 const MIDI_MAPPING = {
     36: 0,
     37: 0,
@@ -18,9 +20,9 @@ const MIDI_MAPPING = {
     49: 6,
     50: 7,
     51: 8
-  };
-  
-  const DRUM_TRACK_MAPPING = {
+};
+
+const DRUM_TRACK_MAPPING = {
     'kick': 36,
     'snare': 38,
     'ch': 42,
@@ -30,25 +32,31 @@ const MIDI_MAPPING = {
     'crash': 49,
     'ht': 50,
     'ride': 51,
-  };
-  const DRUM_TRACKS = Object.keys(DRUM_TRACK_MAPPING);
-  const NUM_DRUM_TRACKS = DRUM_TRACKS.length;
-  const PITCHES = Object.values(DRUM_TRACK_MAPPING);
-  const STEPS_PER_QUARTER = 96;
-  const LOOP_DURATION = 32; // 2bars x 16th note
-  const MIN_VELOCITY_THRESHOLD = 10; // ignore loops with onsets less than this num
-  const ORIGINAL_DIM = NUM_DRUM_TRACKS * LOOP_DURATION;
-  
-  // exports
-  export {
-      DEFAULT_MODEL,
-      MIDI_MAPPING,
-      DRUM_TRACK_MAPPING,
-      DRUM_TRACKS,
-      NUM_DRUM_TRACKS,
-      PITCHES,
-      STEPS_PER_QUARTER,
-      LOOP_DURATION,
-      ORIGINAL_DIM,
-      MIN_VELOCITY_THRESHOLD
-  }
+};
+
+const data = fs.readFileSync(path.dirname(__dirname) + '/assets/drum_pitch_classes.json', 'utf-8');
+const DRUM_PITCH_CLASSES = JSON.parse(data);
+
+const DRUM_PITCH_MAP = Object.keys(DRUM_PITCH_CLASSES['pitch']);
+const CHANNELS = DRUM_PITCH_MAP.length;  // onsets, velocities, offsets
+const PITCHES = Object.values(DRUM_PITCH_MAP);
+
+const STEPS_PER_QUARTER = 96;
+const LOOP_DURATION = 32; // 2bars x 16th notes
+const MIN_VELOCITY_THRESHOLD = 10; // ignore loops with onsets less than this
+const ORIGINAL_DIM = CHANNELS * LOOP_DURATION;
+const NOTE_THRESHOLD = 0.5;
+
+export {
+    DEFAULT_MODEL,
+    MIDI_MAPPING,
+    DRUM_TRACK_MAPPING,
+    DRUM_PITCH_MAP,
+    CHANNELS,
+    PITCHES,
+    STEPS_PER_QUARTER,
+    LOOP_DURATION,
+    ORIGINAL_DIM,
+    MIN_VELOCITY_THRESHOLD,
+    NOTE_THRESHOLD
+}
