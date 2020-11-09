@@ -1,63 +1,103 @@
 import assert from 'assert';
 import fs from 'fs';
 
-import { converterMap } from '../util';
 import PatternBuffer from '../pattern';
-import { NUM_DRUM_TRACKS, LOOP_DURATION } from '../constants';
-import { getInput } from './fixtures.spec';
+import { CHANNELS, LOOP_DURATION } from '../constants';
+import { testPattern } from './fixtures.spec';
 
-let buffer_input = getInput();
-let tensor = new PatternBuffer(buffer_input);
 
-describe('ConverterTensor', function() {
-    it('should generate correct index to sequence mapping schemes', function() {
-        
-        let idx2seq = converterMap(NUM_DRUM_TRACKS, true);
-        let seq2idx = converterMap(NUM_DRUM_TRACKS, false);
-        let indexArray = Object.keys(idx2seq)
-        let seqArray = Object.keys(seq2idx);
-        let sample = Array.from({ length: NUM_DRUM_TRACKS }, _ => 0).toString();
-        assert.ok(indexArray[0] == "0");
-        assert.ok(seqArray[0] == sample);
-        assert.ok(indexArray.length == Math.pow(2, NUM_DRUM_TRACKS))
-        assert.ok(seqArray.length == Math.pow(2, NUM_DRUM_TRACKS))
-        assert.ok(tensor.buffer == buffer_input);
-    })
-    it('should transpose a buffer', function() {
-        let in_buffer = tensor.buffer;
-        let out_buffer = tensor._transpose(in_buffer, false);
-        let in2_buffer = tensor._transpose(out_buffer, true);
-        assert.ok(JSON.stringify(in2_buffer) == JSON.stringify(in_buffer));
-    })
-    it('converts indices to buffer and vice versa', function() {
-        let indices = tensor.indices;
-        assert.ok(indices.length == LOOP_DURATION)
-        let new_tensor = new PatternBuffer(indices);
-        let newBuffer = JSON.stringify(new_tensor.buffer);
-        let original = JSON.stringify(buffer_input);
-        assert.ok(original == newBuffer);
-        let pattern = JSON.stringify(tensor.pattern);
-        let newPattern = JSON.stringify(new_tensor.pattern);
-        assert.ok(pattern == newPattern);
-    })
-    it('converts buffer to pattern and vice versa', function() {
-        let pattern = tensor.pattern;
-        assert.ok(pattern.length == NUM_DRUM_TRACKS);
-        assert.ok(pattern[0].length == LOOP_DURATION);
-        let new_tensor = new PatternBuffer(pattern);
-        assert.ok(buffer_input = new_tensor.indices);
-        assert.ok(pattern == new_tensor.pattern);
-        let buffer = tensor.buffer;
-        let newBuffer = new_tensor.buffer;
-        assert.ok(JSON.stringify(buffer) == JSON.stringify(newBuffer));
-    })
+describe('PatternBuffer', function() {
     it('loads from midi', async function() {
-        let fileName = 'src/tests/data/funkydrummer.mid';
-        let midiBuffer = fs.readFileSync(fileName, 'binary');
-        let data = fs.readFileSync(process.cwd() + '/assets/drum_pitch_classes.json', 'utf-8');
-        let pitchMapping = JSON.parse(data);
-        let patternBuffer = await PatternBuffer.from_midi(midiBuffer, pitchMapping['index']);
+        let patternBuffer = await testPattern();
+
+        // check shapes
+        let onsetsBuffer = patternBuffer.onsetsBuffer;
+        let onsets = patternBuffer.onsets;
+        assert.ok(onsets.length == CHANNELS);
+        assert.ok(onsets[0].length == LOOP_DURATION);
+        assert.ok(onsetsBuffer.length == CHANNELS*LOOP_DURATION);
+        
+        let velocitiesBuffer = patternBuffer.onsetsBuffer;
+        let velocities = patternBuffer.velocities;
+        assert.ok(velocities.length == CHANNELS);
+        assert.ok(velocities[0].length == LOOP_DURATION);
+        assert.ok(velocitiesBuffer.length == CHANNELS*LOOP_DURATION);
+
+        let offsetsBuffer = patternBuffer.offsetsBuffer;
+        let offsets = patternBuffer.offsets;
+        assert.ok(offsets.length == CHANNELS);
+        assert.ok(offsets[0].length == LOOP_DURATION);
+        assert.ok(offsetsBuffer.length == CHANNELS*LOOP_DURATION);
+
+        const isBinary = (v: number) => (v == 1.0 || v == 0.0);
+        const velocityInRange = (v: number) => (v <= 1.0 && v >= 0.0);
+        const offsetsInRange = (v: number) => (v <= 1.0 && v >= -1.0);
+        for (let i = 0; i < offsets.length; i++) {
+            assert.ok(offsets[i].every(offsetsInRange), 'offset values not in range [-1, 1]');
+            assert.ok(onsets[i].every(isBinary), 'onset values not in range [0, 1]');
+            assert.ok(velocities[i].every(velocityInRange), 'velocity values not in range [0, 1]');
+        }
+    })
+    it('transposes buffer correctly', async function() {
+        let patternBuffer = await testPattern();
+
+        let in_buffer = patternBuffer.onsetsBuffer;
+        let out_buffer = patternBuffer.transpose(in_buffer, false);
+        let in2_buffer = patternBuffer.transpose(out_buffer, true);
+        assert.ok(JSON.stringify(in2_buffer) == JSON.stringify(in_buffer), 'something went wrong with transposing the onsets buffer');
+        assert.notStrictEqual(in_buffer, out_buffer);
+
+        in_buffer = patternBuffer.velocitiesBuffer;
+        out_buffer = patternBuffer.transpose(in_buffer, false);
+        in2_buffer = patternBuffer.transpose(out_buffer, true);
+        assert.ok(JSON.stringify(in2_buffer) == JSON.stringify(in_buffer), 'something went wrong with transposing the velocities buffer');
+        assert.notStrictEqual(in_buffer, out_buffer);
+
+        in_buffer = patternBuffer.offsetsBuffer;
+        out_buffer = patternBuffer.transpose(in_buffer, false);
+        in2_buffer = patternBuffer.transpose(out_buffer, true);
+        assert.ok(JSON.stringify(in2_buffer) == JSON.stringify(in_buffer), 'something went wrong with transposing the offsets buffer');
+        assert.notStrictEqual(in_buffer, out_buffer);
+    })
+    it('converts buffer to pattern and vice versa', async function() {
+        let patternBuffer = await testPattern();
+
+        let onsets = patternBuffer.onsets;
+        let velocities = patternBuffer.velocities;
+        let offsets = patternBuffer.offsets;
+
+        let newPatternBuffer = new PatternBuffer(onsets, velocities, offsets);
+        assert.ok(JSON.stringify(patternBuffer.onsetsBuffer) == JSON.stringify(newPatternBuffer.onsetsBuffer));
+        assert.ok(JSON.stringify(patternBuffer.velocitiesBuffer) == JSON.stringify(newPatternBuffer.velocitiesBuffer));
+        assert.ok(JSON.stringify(patternBuffer.offsetsBuffer) == JSON.stringify(newPatternBuffer.offsetsBuffer));
+
+        let onsetsBuffer = patternBuffer.onsetsBuffer;
+        let velocitiesBuffer = patternBuffer.velocitiesBuffer;
+        let offsetsBuffer = patternBuffer.offsetsBuffer;
+        newPatternBuffer = new PatternBuffer(onsetsBuffer, velocitiesBuffer, offsetsBuffer);
+
+        const roundedEqual = (v1: number, v2: number) => (v1.toFixed(3) == v2.toFixed(3));
+        for (let i = 0; i < patternBuffer.onsets.length; i++) {
+            for (let j = 0; j < patternBuffer.onsets[0].length; j++) {
+                assert.ok(roundedEqual(patternBuffer.onsets[i][j], newPatternBuffer.onsets[i][j]));
+                assert.ok(roundedEqual(patternBuffer.velocities[i][j], newPatternBuffer.velocities[i][j]));
+                assert.ok(roundedEqual(patternBuffer.offsets[i][j], newPatternBuffer.offsets[i][j]));
+            }
+        }
+    })
+    it('gets correctly formatted buffer', async function() {
+        let patternBuffer = await testPattern();
+
         let buffer = patternBuffer.buffer;
-        let pattern = patternBuffer.pattern;
+        let step = 4;
+        let onsetsBuffer = Array.from(patternBuffer.onsetsBuffer.slice(CHANNELS*step, CHANNELS*(step+1)));
+        let velocitiesBuffer = Array.from(patternBuffer.velocitiesBuffer.slice(CHANNELS*step, CHANNELS*(step+1)));
+        let offsetsBuffer = Array.from(patternBuffer.offsetsBuffer.slice(CHANNELS*step, CHANNELS*(step+1)));
+        
+        let testBuffer1 = onsetsBuffer.concat(velocitiesBuffer).concat(offsetsBuffer);
+        let testBuffer2 = Array.from(buffer.slice(CHANNELS*3*step, CHANNELS*3*(step+1)))
+        for (let i = 0; i < testBuffer2.length; i++) {
+            assert.strictEqual(testBuffer1[i].toFixed(3), testBuffer2[i].toFixed(3));
+        };
     })
 })

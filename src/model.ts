@@ -1,76 +1,60 @@
 import { InferenceSession, Tensor } from 'onnxruntime';
 
-import { DEFAULT_MODEL, LOOP_DURATION, NUM_DRUM_TRACKS } from './constants';
+import { DEFAULT_MODEL, LOOP_DURATION, CHANNELS } from './constants';
 
 
 class ONNXModel {
     /**
-     * Contains ONNX model and inference functions
+     * Wraps ONNX model for stateful inference sessions
      */
     session: InferenceSession;
-    instruments: number;
-    vocabSize: number;
-    sequenceLength: number;
-    idx2seq: object;
+    channels: number;
+    loopDuration: number;
     
     constructor(
         session: InferenceSession, 
-        instruments: number = 9) {
+        instruments: number) {
         if (typeof session === 'undefined') {
             throw new Error('cannot be called directly - use await Model.build(pattern) instead')
         }
         this.session = session;
-        this.instruments = instruments;
-        this.vocabSize = Math.pow(2, instruments);
-        this.sequenceLength = LOOP_DURATION;  // HARD-CODED SEQUENCE LENGTH TO 2 BARS
+        this.channels = instruments;
+        this.loopDuration = LOOP_DURATION;  // HARD-CODED SEQUENCE LENGTH TO 2 BARS
     }
 
     static async build(
         fpath: string = DEFAULT_MODEL, 
-        instruments: number = NUM_DRUM_TRACKS): Promise<ONNXModel> {
+        channels: number = CHANNELS): Promise<ONNXModel> {
         /**
-         * @param {*} fpath Path to ONNX model, default is FPATH
+         * @fpath   Path to ONNX model
          */  
         try {
             const session = await InferenceSession.create(fpath);
-            return new ONNXModel(session, instruments);
+            return new ONNXModel(session, channels);
         } catch(e) {
             throw new Error(`failed to load ONNX model: ${e}`);
         }
     }
-
-    async decode(
-        indices: Float32Array, 
+    async run(
+        input: Float32Array, 
         deltaZ: Array<number> = [0., 0.], 
-        noteDropout: number = 0.5): Promise<Float32Array> {
+        noteDropout: number = 0.5) {
         /**
-         * Forward pass of ONNX model decoder - generates pattern variation.
+         * Forward pass of ONNX model.
          * 
-         * @param {*} indices  (length=32) containing sequence indices
-         * @param {*} deltaZ Delta from origin in z-space for both dimensions (currently only support 2D)
-         * @param {*} noteDropout Probability of note dropout when generating new pattern
+         * @input       PatternBuffer.buffer containing input data
+         * @deltaZ      Delta from origin in z-space for both dimensions (currently only support 2D)
+         * @noteDropout Probability of note dropout when generating new pattern
          * 
          * @returns output indices
          */
         
-        const tensor = new Tensor('float32', indices, [32, 1]);
-        const deltaZTensor = new Tensor('float32', deltaZ, [2, 1]);
-        const noteDropoutTensor = new Tensor(new Float32Array(1), []);
-        noteDropoutTensor.data[0] = noteDropout;
+        let tensor = new Tensor('float32', input, [1, 32, 27]);
+        let deltaZTensor = new Tensor('float32', deltaZ, [2, ]);
+        let noteDropoutTensor = new Tensor('float32', [noteDropout], [1, ])
         const feeds = { input: tensor, delta_z: deltaZTensor, note_dropout: noteDropoutTensor};
-        const results = await this.session.run(feeds);
-        let output = this.fromOneHot(results.output.data);
+        const output = await this.session.run(feeds);
         return output;
-    }
-
-    fromOneHot(tensor): Float32Array {
-        let indices = [];
-        for (let i = 0; i < this.sequenceLength; i++) {
-            let tmp = tensor.slice(i*this.vocabSize, (i+1)*this.vocabSize)
-            let idx = tmp.indexOf(Math.max(...tmp));
-            indices.push(idx)
-        }
-        return Float32Array.from(indices)
     }
 }
 
