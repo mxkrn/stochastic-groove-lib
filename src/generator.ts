@@ -102,7 +102,7 @@ class Generator {
         const zs = [];
         for (let x = -gridSize; x < gridSize; x++) {
             for (let y = -gridSize; y < gridSize; y++) {
-                zs.push(`${x}, ${y}`);
+                zs.push(`${x},${y}`);
             }
         }
         this._gridSize = gridSize;

@@ -1,6 +1,6 @@
 {
   "name": "stochastic-groove-lib",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Library code for stochastic groove application",
   "homepage": "https://github.com/mxkrn/stochastic-groove-lib",
   "bugs": {
@@ -10,8 +10,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/tests/**/*.spec.ts",
-    "lint": "./node_modules/.bin/eslint",
-    "build": "./node_modules/.bin/eslint && rm -rf dist && tsc",
+    "lint": "./node_modules/.bin/eslint src",
+    "build": "rm -rf dist && tsc",
     "watch": "tsc --watch"
   },
   "author": "Max Kraan",
