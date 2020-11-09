@@ -57,8 +57,8 @@ class PatternBuffer {
             throw new Error(`invalid input of length ${onsets.length}`);
         }
     }
-    get pattern() {
-        let p = this._onsets.concat(this._velocities);
+    get pattern(): Array<Array<number>> {
+        const p = this._onsets.concat(this._velocities);
         return p.concat(this._offsets);
     }
     get buffer(): Float32Array {
@@ -72,61 +72,61 @@ class PatternBuffer {
         for (let step = 0; step < length; step++) {
             for (let ch = 0; ch < channels; ch++) {
                 output.push(this._onsets[ch][step]);
-            };
+            }
             for (let ch = 0; ch < channels; ch++) {
                 output.push(this._velocities[ch][step]);
-            };
+            }
             for (let ch = 0; ch < channels; ch++) {
                 output.push(this._offsets[ch][step]);
-            };
+            }
         }
         return Float32Array.from(output);
     }
-    get onsets() {
+    get onsets(): Array<Array<number>> {
         return this._onsets;
     }
-    get velocities() {
+    get velocities(): Array<Array<number>> {
         return this._velocities;
     }
-    get offsets() {
+    get offsets(): Array<Array<number>> {
         return this._offsets;
     }
-    get onsetsBuffer() {
+    get onsetsBuffer(): Float32Array {
         return this._onsetsBuffer;
     }
-    get velocitiesBuffer() {
+    get velocitiesBuffer(): Float32Array {
         return this._velocitiesBuffer;
     }
-    get offsetsBuffer() {
+    get offsetsBuffer(): Float32Array {
         return this._offsetsBuffer;
     }
     static async from_midi(
         filePath: string, 
-        pitchMapping: Object): Promise<PatternBuffer> {
+        pitchMapping: Record<string, number>): Promise<PatternBuffer> {
         /**
          * Construct the PatternBuffer class from a MIDI file
          * @filePath        Path to MIDI file
          * @pitchMapping    Object containing the channel pitch to index mapping
          */
-        let onsets = initArray([CHANNELS, LOOP_DURATION]);
-        let velocities = initArray([CHANNELS, LOOP_DURATION]);
-        let offsets = initArray([CHANNELS, LOOP_DURATION]);
+        const onsets = initArray([CHANNELS, LOOP_DURATION]);
+        const velocities = initArray([CHANNELS, LOOP_DURATION]);
+        const offsets = initArray([CHANNELS, LOOP_DURATION]);
 
-        let binary = fs.readFileSync(filePath, 'binary');
+        const binary = fs.readFileSync(filePath, 'binary');
         const midiSMF = new JZZ.MIDI.SMF(binary);
 
-        let promises = midiSMF.map((seq) => {
+        const promises = midiSMF.map((seq) => {
             for (let j = 0; j < seq.length; j++) {
-                let event = seq[j];
+                const event = seq[j];
                 if (event['0'] == 144) {
-                    let step = Math.round(event.tt / (STEPS_PER_QUARTER / 4));
-                    let channel = pitchMapping[event['1'].toString()]
+                    const step = Math.round(event.tt / (STEPS_PER_QUARTER / 4));
+                    const channel = pitchMapping[event['1'].toString()]
 
                     onsets[channel][step] = 1.;
-                    let v = event['2'] / 127.;
+                    const v = event['2'] / 127.;
                     velocities[channel][step] = v;
                     if (event['0']) {
-                        let shift = signedMod(event.tt);
+                        const shift = signedMod(event.tt);
                         event.tt = event.tt - shift;
                     }
                     offsets[channel][step] = signedMod(event.tt) / 12.;
@@ -143,11 +143,11 @@ class PatternBuffer {
         /**
          * Cannot use Array.from(Float32Array) for some reason (number !-> bigint)
          */
-        let onsets = [];
-        let velocities = [];
-        let offsets = [];
+        const onsets = [];
+        const velocities = [];
+        const offsets = [];
         for (let i = 0; i < onsetsTensor.data.length; i++) {
-            let value = onsetsTensor.data[i];
+            const value = onsetsTensor.data[i];
             if (value > NOTE_THRESHOLD) {
                 onsets.push(1.);
                 velocities.push(Number(velocitiesTensor.data[i]));
@@ -183,7 +183,7 @@ class PatternBuffer {
         const bufferArray = Array.from(this.transpose(buffer, false))
         const pattern = [];
         for (let i = 0; i < this.instruments; i++) {
-            let tmp = bufferArray.slice(i*this.sequenceLength, (i+1)*this.sequenceLength);
+            const tmp = bufferArray.slice(i*this.sequenceLength, (i+1)*this.sequenceLength);
             pattern.push(tmp);
         }
         return pattern;
@@ -192,15 +192,15 @@ class PatternBuffer {
         /**
          * Transpose elements in buffer between [this.sequenceLength, this.instruments]
          */
-        let tBuffer = new Float32Array(buffer.length)
+        const tBuffer = new Float32Array(buffer.length)
         Array.from(buffer).forEach((value, idx) => {
             if (inverse) {
-                let rem = Math.floor(idx / this.sequenceLength)
-                let idxt = ((idx%this.sequenceLength)*this.instruments) + rem
+                const rem = Math.floor(idx / this.sequenceLength)
+                const idxt = ((idx%this.sequenceLength)*this.instruments) + rem
                 tBuffer[idxt] = value;
             } else {
-                let rem = Math.floor(idx / this.instruments)
-                let idxT = ((idx%this.instruments)*this.sequenceLength) + rem
+                const rem = Math.floor(idx / this.instruments)
+                const idxT = ((idx%this.instruments)*this.sequenceLength) + rem
                 tBuffer[idxT] = value;
             }
             

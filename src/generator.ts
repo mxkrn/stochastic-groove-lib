@@ -22,7 +22,7 @@ class Generator {
     patternBuffer: PatternBuffer;
     latentCoordinates: Array<string>;
     _gridSize: number;
-    _data: Object;
+    _data: Record<string, Record<string, Float32Array>>;
     
     constructor(
         model: ONNXModel, 
@@ -47,22 +47,22 @@ class Generator {
 
         this._initialize();
     }
-    get data() {
+    get data(): Record<string, Record<string, Float32Array>> {
         return this._data;
     }
-    get gridSize() {
+    get gridSize(): number {
         return this._gridSize;
     }
     static async build(
         onsets: Float32Array, 
         velocities: Float32Array,
         offsets: Float32Array,
-        numSamples: number = 400,
-        noteDropout: number = 0.5, 
-        instruments: number = CHANNELS,
-        sequenceLength: number = LOOP_DURATION): Promise<Generator> {
+        numSamples = 400,
+        noteDropout = 0.5, 
+        instruments = CHANNELS,
+        sequenceLength = LOOP_DURATION): Promise<Generator> {
         try {
-            let model = await ONNXModel.build();
+            const model = await ONNXModel.build();
             return new Generator(model, onsets, velocities, offsets, numSamples, noteDropout, instruments, sequenceLength);
         } catch(e) {
             console.error('failed to load LatentSpace');
@@ -70,7 +70,7 @@ class Generator {
         }
         
     }
-    async populate() {
+    async populate(): Promise<void> {
         /**
          * Populates this.data by decoding the latent coordinates array this.zs in parallel
          */
@@ -79,13 +79,15 @@ class Generator {
         const model = this.model;
         const noteDropout = this.noteDropout;
 
-        let promises = Object.keys(this._data).map(async(z) => {
+        const promises = Object.keys(this._data).map(async(z) => {
             if (z == '0,0') {
-                data[z] = patternBuffer.buffer;
+                data[z]['onsets'] = patternBuffer.onsetsBuffer;
+                data[z]['velocities'] = patternBuffer.velocitiesBuffer;
+                data[z]['offsets'] = patternBuffer.offsetsBuffer;
             } else {
-                let delta_z = z.split(',').map((z_i) => { return parseFloat(z_i) });
-                let output = await model.run(patternBuffer.buffer, delta_z, noteDropout);
-                let newPatternBuffer = await PatternBuffer.from_tensors(output.onsets, output.velocities, output.offsets);
+                const delta_z = z.split(',').map((z_i) => { return parseFloat(z_i) });
+                const output = await model.run(patternBuffer.buffer, delta_z, noteDropout);
+                const newPatternBuffer = await PatternBuffer.from_tensors(output.onsets, output.velocities, output.offsets);
                 data[z]['onsets'] = newPatternBuffer.onsetsBuffer;
                 data[z]['velocities'] = newPatternBuffer.velocitiesBuffer;
                 data[z]['offsets'] = newPatternBuffer.offsetsBuffer;
@@ -96,13 +98,13 @@ class Generator {
         
     }
     private _initialize() {
-        let gridSize = Math.round((Math.sqrt(this.numSamples))/2);
+        const gridSize = Math.round((Math.sqrt(this.numSamples))/2);
         const zs = [];
         for (let x = -gridSize; x < gridSize; x++) {
             for (let y = -gridSize; y < gridSize; y++) {
                 zs.push(`${x}, ${y}`);
-            };
-        };
+            }
+        }
         this._gridSize = gridSize;
         this._data = {};
         zs.forEach((z) => {

@@ -38,7 +38,7 @@ class ONNXModel {
     async run(
         input: Float32Array, 
         deltaZ: Array<number> = [0., 0.], 
-        noteDropout: number = 0.5) {
+        noteDropout = 0.5): Promise<Record<string, Tensor>> {
         /**
          * Forward pass of ONNX model.
          * 
@@ -49,9 +49,9 @@ class ONNXModel {
          * @returns output indices
          */
         
-        let tensor = new Tensor('float32', input, [1, 32, 27]);
-        let deltaZTensor = new Tensor('float32', deltaZ, [2, ]);
-        let noteDropoutTensor = new Tensor('float32', [noteDropout], [1, ])
+        const tensor = new Tensor('float32', input, [1, 32, 27]);
+        const deltaZTensor = new Tensor('float32', deltaZ, [2, ]);
+        const noteDropoutTensor = new Tensor('float32', [noteDropout], [1, ])
         const feeds = { input: tensor, delta_z: deltaZTensor, note_dropout: noteDropoutTensor};
         const output = await this.session.run(feeds);
         return output;

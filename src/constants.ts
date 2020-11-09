@@ -34,8 +34,8 @@ const DRUM_TRACK_MAPPING = {
     'ride': 51,
 };
 
-let data = fs.readFileSync(path.dirname(__dirname) + '/assets/drum_pitch_classes.json', 'utf-8');
-let DRUM_PITCH_CLASSES = JSON.parse(data);
+const data = fs.readFileSync(path.dirname(__dirname) + '/assets/drum_pitch_classes.json', 'utf-8');
+const DRUM_PITCH_CLASSES = JSON.parse(data);
 
 const DRUM_PITCH_MAP = Object.keys(DRUM_PITCH_CLASSES['pitch']);
 const CHANNELS = DRUM_PITCH_MAP.length;  // onsets, velocities, offsets

@@ -18,7 +18,7 @@ function scale(value: number, minIn: number, maxIn: number, minOut: number, maxO
 
 function initArray(shape: Array<number>): Array<Array<number>> {
     return Array.from({ length: shape[0] }, _ => {
-        let array = Array.from({ length: shape[1] }, _ => 0);
+        const array = Array.from({ length: shape[1] }, _ => 0);
         return array;
     });
 }
