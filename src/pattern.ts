@@ -145,19 +145,24 @@ class PatternBuffer {
         const promises = midiSMF.map((seq) => {
             for (let j = 0; j < seq.length; j++) {
                 const event = seq[j];
-                if (event['0'] == 144) {
-                    const step = Math.round(event.tt / (stepsPerQuarter / 4));
-                    const channel = pitchMapping[event['1'].toString()]
-                    
+                const stepsPer16th = stepsPerQuarter / 4.;
+                if ((event['0'] == 144) && (event['2'] > 0)) {  // note-activation and note-on (not note-off)
+                    const step = Math.round(event.tt / (stepsPer16th));
                     if (step >= LOOP_DURATION) {
                         // Limit pattern length to LOOP_DURATION
                         break;
                     }
-                    onsets[channel][step] = 1.;
-                    const v = event['2'] / 127.;
+                    const pitch = event['1'].toString();
+                    const channel = pitchMapping[pitch];
+
+                    onsets[channel][step] = 1.; // onsets
+
+                    const v = event['2'] / 127.; // velocities
                     velocities[channel][step] = v;
-                    const shift = signedMod(event.tt, stepsPerQuarter / 4.);
-                    offsets[channel][step] = shift / stepsPerQuarter / 8;
+
+                    const shift = signedMod(event.tt, stepsPer16th); // offsets
+                    let offset = shift / (stepsPer16th);
+                    offsets[channel][step] = offset;
                 }
             }
         });
