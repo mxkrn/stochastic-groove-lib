@@ -126,7 +126,7 @@ class PatternBuffer {
                     if (step >= LOOP_DURATION) {
                         // Limit pattern length to LOOP_DURATION
                         break;
-                    };
+                    }
                     onsets[channel][step] = 1.;
                     const v = event['2'] / 127.;
                     velocities[channel][step] = v;

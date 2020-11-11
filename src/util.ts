@@ -29,8 +29,8 @@ function pitchToIndexMap(pitchMap: Record<string, Array<number>>, indexMap: Reco
     for (const [instrument, pitches] of Object.entries(pitchMap)) {
         for (const p of pitches) {
             pitchIndexMap[p.toString()] = indexMap[instrument];
-        };
-    };
+        }
+    }
     return pitchIndexMap;
 }
 

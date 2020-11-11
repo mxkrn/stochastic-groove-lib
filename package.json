@@ -10,7 +10,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register src/tests/**/*.spec.ts",
-    "lint": "./node_modules/.bin/eslint src",
+    "lint": "./node_modules/.bin/eslint src --fix",
     "build": "rm -rf dist && tsc",
     "watch": "tsc --watch"
   },
