@@ -3,7 +3,7 @@ import { Tensor } from 'onnxruntime';
 const JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
-import { LOOP_DURATION , CHANNELS, STEPS_PER_QUARTER, NOTE_THRESHOLD } from './constants';
+import { LOOP_DURATION , CHANNELS, NOTE_THRESHOLD } from './constants';
 import { signedMod, initArray } from './util';
 
 class PatternBuffer {
@@ -114,22 +114,24 @@ class PatternBuffer {
 
         const binary = fs.readFileSync(filePath, 'binary');
         const midiSMF = new JZZ.MIDI.SMF(binary);
+        const stepsPerQuarter = midiSMF.ppqn;
 
         const promises = midiSMF.map((seq) => {
             for (let j = 0; j < seq.length; j++) {
                 const event = seq[j];
                 if (event['0'] == 144) {
-                    const step = Math.round(event.tt / (STEPS_PER_QUARTER / 4));
+                    const step = Math.round(event.tt / (stepsPerQuarter / 4));
                     const channel = pitchMapping[event['1'].toString()]
-
+                    
+                    if (step >= LOOP_DURATION) {
+                        // Limit pattern length to LOOP_DURATION
+                        break;
+                    }
                     onsets[channel][step] = 1.;
                     const v = event['2'] / 127.;
                     velocities[channel][step] = v;
-                    if (event['0']) {
-                        const shift = signedMod(event.tt);
-                        event.tt = event.tt - shift;
-                    }
-                    offsets[channel][step] = signedMod(event.tt) / 12.;
+                    const shift = signedMod(event.tt, stepsPerQuarter / 4.);
+                    offsets[channel][step] = shift / stepsPerQuarter / 8;
                 }
             }
         });
