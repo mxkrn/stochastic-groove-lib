@@ -33,6 +33,7 @@ describe('PatternBuffer', function() {
         const offsetsInRange = (v: number) => (v <= 1.0 && v >= -1.0);
         for (let i = 0; i < offsets.length; i++) {
             assert.ok(offsets[i].every(offsetsInRange), 'offset values not in range [-1, 1]');
+            
             assert.ok(onsets[i].every(isBinary), 'onset values not in range [0, 1]');
             assert.ok(velocities[i].every(velocityInRange), 'velocity values not in range [0, 1]');
         }

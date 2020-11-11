@@ -3,7 +3,7 @@ import { Tensor } from 'onnxruntime';
 const JZZ = require('jzz');
 require('jzz-midi-smf')(JZZ);
 
-import { LOOP_DURATION , CHANNELS, NOTE_THRESHOLD } from './constants';
+import { LOOP_DURATION , CHANNELS, NOTE_THRESHOLD, PITCHES } from './constants';
 import { signedMod, initArray } from './util';
 
 class PatternBuffer {
@@ -111,10 +111,36 @@ class PatternBuffer {
         const onsets = initArray([CHANNELS, LOOP_DURATION]);
         const velocities = initArray([CHANNELS, LOOP_DURATION]);
         const offsets = initArray([CHANNELS, LOOP_DURATION]);
-
+        
+        // get MIDI data
         const binary = fs.readFileSync(filePath, 'binary');
         const midiSMF = new JZZ.MIDI.SMF(binary);
         const stepsPerQuarter = midiSMF.ppqn;
+        
+        // initialize backup pitch mapping (in case unavailable in pitchMapping)
+        const pitches = [];
+
+        midiSMF.forEach((seq) => {
+            for (let j = 0; j < seq.length; j++) {
+                if (seq[j]['0'] == 144) {
+                    const pitch = parseInt(seq[j]['1']);
+                    pitches.push(pitch);
+                };
+            };
+        });
+        const unique = (value, index, self) => {
+            return self.indexOf(value) === index
+        }
+        const uniquePitches = pitches.filter(unique);
+        uniquePitches.sort();
+        for (let i = 0; i < uniquePitches.length; i++) {
+            let p = uniquePitches[i];
+            if (p.toString() in Object.keys(pitchMapping)) {
+                // Currently assigning a new index based on ordered MIDI pitch values
+                // very lame way of handling missing MIDI pitches, will fix soon.
+                pitchMapping[p.toString()] = i;
+            };
+        };
 
         const promises = midiSMF.map((seq) => {
             for (let j = 0; j < seq.length; j++) {
