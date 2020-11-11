@@ -75,7 +75,11 @@ describe('PatternBuffer', function() {
         const offsetsBuffer = patternBuffer.offsetsBuffer;
         newPatternBuffer = new PatternBuffer(onsetsBuffer, velocitiesBuffer, offsetsBuffer);
 
-        const roundedEqual = (v1: number, v2: number) => (v1.toFixed(3) == v2.toFixed(3));
+        const roundedEqual = (v1: number, v2: number) => {
+            const v1s = Math.fround(v1);
+            const v2s = Math.fround(v2);
+            return v1s == v2s;
+        };
         for (let i = 0; i < patternBuffer.onsets.length; i++) {
             for (let j = 0; j < patternBuffer.onsets[0].length; j++) {
                 assert.ok(roundedEqual(patternBuffer.onsets[i][j], newPatternBuffer.onsets[i][j]));

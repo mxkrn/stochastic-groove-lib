@@ -1,11 +1,13 @@
 import fs from 'fs';
 import PatternBuffer from '../pattern';
+import { pitchToIndexMap } from '../util';
 
 async function testPattern() {
-    const filePath = 'src/tests/data/funkydrummer.mid';
+    const filePath = 'src/tests/data/Variation_01.mid';
     const data = fs.readFileSync(process.cwd() + '/assets/drum_pitch_classes.json', 'utf-8');
-    const pitchMapping = JSON.parse(data);
-    const patternBuffer = await PatternBuffer.from_midi(filePath, pitchMapping['index']);
+    const drumPitchClasses = JSON.parse(data);
+    const pitchIndexMap = pitchToIndexMap(drumPitchClasses["pitch"], drumPitchClasses["index"]);
+    const patternBuffer = await PatternBuffer.from_midi(filePath, pitchIndexMap);
     return patternBuffer;
 }
 
