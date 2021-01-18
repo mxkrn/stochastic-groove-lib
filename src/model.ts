@@ -1,61 +1,73 @@
-import { InferenceSession, Tensor } from 'onnxruntime';
+import path from "path";
 
-import { DEFAULT_MODEL, LOOP_DURATION, CHANNELS } from './constants';
+import { InferenceSession, Tensor } from "onnxruntime";
+import { LOOP_DURATION, CHANNELS } from "./constants";
+import { zeroArray } from "./util";
+import Pattern from "./tensor";
+
+const MODEL_NAME = "latest.onnx";
+const DEFAULT_MODEL = path.dirname(__dirname) + "/assets/models/" + MODEL_NAME;
+const LATENT_SIZE = 2
+
+export { DEFAULT_MODEL, LATENT_SIZE };
 
 
 class ONNXModel {
-    /**
-     * Wraps ONNX model for stateful inference sessions
-     */
-    session: InferenceSession;
-    channels: number;
-    loopDuration: number;
-    
-    constructor(
-        session: InferenceSession, 
-        instruments: number) {
-        if (typeof session === 'undefined') {
-            throw new Error('cannot be called directly - use await Model.build(pattern) instead')
-        }
-        this.session = session;
-        this.channels = instruments;
-        this.loopDuration = LOOP_DURATION;  // HARD-CODED SEQUENCE LENGTH TO 2 BARS
-    }
+  /**
+   * Wraps ONNX model for stateful inference sessions
+   */
+  session: InferenceSession;
+  channels: number;
+  loopDuration: number = LOOP_DURATION;
+  deltaZ: Array<number>;
 
-    static async build(
-        fpath: string = DEFAULT_MODEL, 
-        channels: number = CHANNELS): Promise<ONNXModel> {
-        /**
-         * @fpath   Path to ONNX model
-         */  
-        try {
-            const session = await InferenceSession.create(fpath);
-            return new ONNXModel(session, channels);
-        } catch(e) {
-            throw new Error(`failed to load ONNX model: ${e}`);
-        }
+  constructor(session: InferenceSession, instruments: number) {
+    if (typeof session === "undefined") {
+      throw new Error(
+        "cannot be called directly - use await Model.build(pattern) instead"
+      );
     }
-    async run(
-        input: Float32Array, 
-        deltaZ: Array<number> = [0., 0.], 
-        noteDropout = 0.5): Promise<Record<string, Tensor>> {
-        /**
-         * Forward pass of ONNX model.
-         * 
-         * @input       PatternBuffer.buffer containing input data
-         * @deltaZ      Delta from origin in z-space for both dimensions (currently only support 2D)
-         * @noteDropout Probability of note dropout when generating new pattern
-         * 
-         * @returns output indices
-         */
-        
-        const tensor = new Tensor('float32', input, [1, 32, 27]);
-        const deltaZTensor = new Tensor('float32', deltaZ, [2, ]);
-        const noteDropoutTensor = new Tensor('float32', [noteDropout], [1, ])
-        const feeds = { input: tensor, delta_z: deltaZTensor, note_dropout: noteDropoutTensor};
-        const output = await this.session.run(feeds);
-        return output;
+    this.session = session;
+    this.channels = instruments;
+    this.deltaZ = zeroArray(LATENT_SIZE);
+  }
+
+  static async build(
+    filePath: string = DEFAULT_MODEL,
+    channels: number = CHANNELS
+  ): Promise<ONNXModel> {
+    /**
+     * @filePath Path to ONNX model
+     */
+    try {
+      const session = await InferenceSession.create(filePath);
+      return new ONNXModel(session, channels);
+    } catch (e) {
+      throw new Error(`failed to load ONNX model: ${e}`);
     }
+  }
+  async forward(
+    input: Pattern,
+    noteDropout = 0.5
+  ): Promise<Record<string, Tensor>> {
+    /**
+     * Forward pass of ONNX model.
+     *
+     * @input       PatternBuffer.buffer containing input data
+     * @batchSize   Number of batches in input
+     * @noteDropout Probability of note dropout when generating new pattern
+     *
+     * @returns output indices
+     */
+    const feeds = {
+      input: input,
+      delta_z: new Tensor("float32", this.deltaZ, [this.deltaZ.length]),
+      note_dropout: new Tensor("float32", [noteDropout], [1]),
+    };
+    const output = await this.session.run(feeds);
+    // TODO: Test batched output for onset, velocity, and offset patterns
+    return output;
+  }
 }
 
 export default ONNXModel;

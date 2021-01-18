@@ -1,16 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "es6",
-        "module": "CommonJS",
-        "moduleResolution": "Node",
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "allowJs": false,
-        "esModuleInterop": true,
-        "declaration": true
-    },
-    "exclude": [
-        "src/tests/",
-        "dist"
-    ]
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "allowJs": false,
+    "esModuleInterop": true,
+    "declaration": true,
+    "noImplicitAny": false,
+  },
+  "exclude": ["src/tests/", "dist"]
 }

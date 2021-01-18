@@ -1,5 +1,5 @@
-stochastic-groove-lib
----
+## stochastic-groove-lib
+
 **npm**
 :link: https://www.npmjs.com/package/stochastic-groove-lib
 

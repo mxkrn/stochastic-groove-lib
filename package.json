@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register src/tests/**/*.spec.ts",
+    "test": "mocha -r ts-node/register",
     "lint": "./node_modules/.bin/eslint src --fix",
     "build": "rm -rf dist && tsc",
     "watch": "tsc --watch"
@@ -29,6 +29,7 @@
     "@typescript-eslint/parser": "^4.6.1",
     "eslint": "^7.13.0",
     "mocha": "^8.1.3",
+    "prettier": "2.2.1",
     "ts-loader": "^8.0.4",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
