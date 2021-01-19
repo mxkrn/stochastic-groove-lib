@@ -1,6 +1,5 @@
 import ONNXModel from "./model";
-import PatternBuffer from "./pattern";
-import Pattern from "./tensor";
+import Pattern from "./pattern";
 import { LOOP_DURATION, CHANNELS, MIN_ONSET_THRESHOLD, MAX_ONSET_THRESHOLD } from "./constants";
 import { linspace }  from "./util";
 

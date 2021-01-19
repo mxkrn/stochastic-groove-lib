@@ -1,6 +1,7 @@
 import { performance } from "perf_hooks";
+
 import Predictor from "../predict";
-import { getRequestBody } from "./fixtures.spec";
+import { getRequestBody } from "./helpers";
 
 describe("ONNXModel", function () {
   it("builds and initializes methods and variables", async function () {

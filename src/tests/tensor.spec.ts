@@ -1,8 +1,9 @@
 import assert from "assert";
-import Pattern from "../tensor";
-import { transpose2d } from "../tensor";
+import Pattern from "../pattern";
+import { transpose2d } from "../pattern";
 
-import { arraysEqual } from "./helpers";
+import { arraysEqual, testPattern } from "./helpers";
+import { LOOP_DURATION, CHANNELS } from "../constants";
 
 
 describe("Pattern", function() {
@@ -88,6 +89,40 @@ describe("Pattern", function() {
         arraysEqual(got.tensor(), expected);
     })
   })
+
+
+  describe("Pattern", function () {
+    it("loads from midi", async function () {
+      const [onsetsPattern, velocitiesPattern, offsetsPattern] = await testPattern();
+  
+      assert.ok(onsetsPattern.tensor()[0][0].length == CHANNELS);
+      assert.ok(onsetsPattern.tensor()[0].length == LOOP_DURATION);
+      assert.ok(onsetsPattern.data.length == CHANNELS * LOOP_DURATION);
+  
+      assert.ok(velocitiesPattern.tensor()[0][0].length == CHANNELS);
+      assert.ok(velocitiesPattern.tensor()[0].length == LOOP_DURATION);
+      assert.ok(velocitiesPattern.data.length == CHANNELS * LOOP_DURATION);
+  
+      assert.ok(offsetsPattern.tensor()[0][0].length == CHANNELS);
+      assert.ok(offsetsPattern.tensor()[0].length == LOOP_DURATION);
+      assert.ok(offsetsPattern.data.length == CHANNELS * LOOP_DURATION);
+  
+      const isBinary = (v: number) => v == 1.0 || v == 0.0;
+      const velocityInRange = (v: number) => v <= 1.0 && v >= 0.0;
+      const offsetsInRange = (v: number) => v <= 1.0 && v >= -1.0;
+  
+      for (let i = 0; i < offsetsPattern.data.length; i++) {
+        assert.ok(
+          offsetsPattern.data.every(offsetsInRange),
+          "offset values not in range [-1, 1]"
+        );
+        assert.ok(
+          offsetsPattern.data.every(velocityInRange),
+          "velocity values not in range [0, 1]"
+        );
+      }
+    });
+  });
 
 describe("transpose2d", function() {
     it("handles 2d input correctly", function() {

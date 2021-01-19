@@ -1,12 +1,12 @@
-import Generator from "./generator";
-import PatternBuffer from "./pattern";
+import Predictor from "./predict";
+import Pattern from "./pattern";
 import ONNXModel from "./model";
 import { DRUM_PITCH_CLASSES } from "./constants";
 import { pitchToIndexMap } from "./util";
 
 export {
-  Generator,
-  PatternBuffer,
+  Predictor,
+  Pattern,
   ONNXModel,
   pitchToIndexMap,
   DRUM_PITCH_CLASSES,

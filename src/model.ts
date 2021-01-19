@@ -3,7 +3,7 @@ import path from "path";
 import { InferenceSession, Tensor } from "onnxruntime";
 import { LOOP_DURATION, CHANNELS } from "./constants";
 import { zeroArray } from "./util";
-import Pattern from "./tensor";
+import Pattern from "./pattern";
 
 const MODEL_NAME = "latest.onnx";
 const DEFAULT_MODEL = path.dirname(__dirname) + "/assets/models/" + MODEL_NAME;
@@ -53,8 +53,7 @@ class ONNXModel {
     /**
      * Forward pass of ONNX model.
      *
-     * @input       PatternBuffer.buffer containing input data
-     * @batchSize   Number of batches in input
+     * @input       Pattern instance containing input data
      * @noteDropout Probability of note dropout when generating new pattern
      *
      * @returns output indices

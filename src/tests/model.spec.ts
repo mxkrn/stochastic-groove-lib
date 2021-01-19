@@ -2,7 +2,7 @@ import assert from "assert";
 
 import ONNXModel from "../model";
 import { CHANNELS, LOOP_DURATION } from "../constants";
-import { testPatternBuffer, testPattern } from "./fixtures.spec";
+import { testPattern } from "./helpers";
 
 describe("ONNXModel", function () {
   it("is constructed correctly", async function () {
@@ -29,7 +29,7 @@ describe("ONNXModel", function () {
     
     const output = await model.forward(repeat_pattern, noteDropout);
     assert.ok(output.onsets.size == onsets.size*batchSize)
-    
+
     // TODO: More tests on output shape and actual values
   });
 });
