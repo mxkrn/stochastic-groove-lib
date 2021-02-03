@@ -6,12 +6,10 @@ const data = fs.readFileSync(
   "utf-8"
 );
 const DRUM_PITCH_CLASSES = JSON.parse(data);
-
 const DRUM_PITCH_MAP = Object.keys(DRUM_PITCH_CLASSES["pitch"]);
-const CHANNELS = DRUM_PITCH_MAP.length; // onsets, velocities, offsets
+const CHANNELS = DRUM_PITCH_MAP.length;
 const PITCHES = Object.values(DRUM_PITCH_MAP);
-
-const LOOP_DURATION = 16; // 2bars x 16th notes
+const LOOP_DURATION = 16;
 const MIN_VELOCITY_THRESHOLD = 10; // ignore loops with onsets less than this
 const NOTE_THRESHOLD = 0.5;
 const MIN_ONSET_THRESHOLD = 0.3;

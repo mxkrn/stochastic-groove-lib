@@ -3,7 +3,7 @@ import Pattern from "./pattern";
 import { LOOP_DURATION, CHANNELS, MIN_ONSET_THRESHOLD, MAX_ONSET_THRESHOLD } from "./constants";
 import { linspace }  from "./util";
 
-class Predictor {
+class PatternHandler {
   /**
    * This class wraps our loaded ONNX model and fills an Object (data)
    * with predicted patterns
@@ -101,10 +101,10 @@ class Predictor {
     sequenceLength = LOOP_DURATION,
     minOnsetThreshold = MIN_ONSET_THRESHOLD,
     maxOnsetThreshold = MAX_ONSET_THRESHOLD
-  ): Promise<Predictor> {
+  ): Promise<PatternHandler> {
     try {
       const model = await ONNXModel.build();
-      return new Predictor(
+      return new PatternHandler(
         model,
         onsets,
         velocities,
@@ -180,4 +180,4 @@ function process_offsets(offsets, dims: Array<number>): Float32Array {
   return Float32Array.from(onsetsPattern.data);
 }
 
-export default Predictor;
+export default PatternHandler;

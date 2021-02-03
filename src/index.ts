@@ -1,11 +1,11 @@
-import Predictor from "./predict";
+import PatternHandler from "./predict";
 import Pattern from "./pattern";
 import ONNXModel from "./model";
 import { DRUM_PITCH_CLASSES } from "./constants";
 import { pitchToIndexMap } from "./util";
 
 export {
-  Predictor,
+  PatternHandler,
   Pattern,
   ONNXModel,
   pitchToIndexMap,
