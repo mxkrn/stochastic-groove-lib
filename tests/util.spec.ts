@@ -1,6 +1,6 @@
 import assert from "assert";
 import { arraysEqual } from "./helpers"
-import { linspace, round } from "../util";
+import { linspace, round } from "../src/util";
 
 
 describe("linspace", function() {

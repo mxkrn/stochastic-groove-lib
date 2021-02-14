@@ -1,7 +1,7 @@
 import assert from "assert";
 
-import ONNXModel from "../model";
-import { CHANNELS, LOOP_DURATION } from "../constants";
+import ONNXModel from "../src/model";
+import { CHANNELS, LOOP_DURATION } from "../src/constants";
 import { testPattern } from "./helpers";
 
 describe("ONNXModel", function () {

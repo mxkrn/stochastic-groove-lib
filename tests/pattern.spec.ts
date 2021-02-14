@@ -1,9 +1,9 @@
 import assert from "assert";
-import Pattern from "../pattern";
-import { transpose2d } from "../pattern";
+import Pattern from "../src/pattern";
+import { transpose2d } from "../src/pattern";
 
 import { arraysEqual, testPattern } from "./helpers";
-import { LOOP_DURATION, CHANNELS } from "../constants";
+import { LOOP_DURATION, CHANNELS } from "../src/constants";
 
 
 describe("Pattern", function() {
@@ -107,7 +107,7 @@ describe("Pattern", function() {
       assert.ok(offsetsPattern.tensor()[0].length == LOOP_DURATION);
       assert.ok(offsetsPattern.data.length == CHANNELS * LOOP_DURATION);
   
-      const isBinary = (v: number) => v == 1.0 || v == 0.0;
+      // const isBinary = (v: number) => v == 1.0 || v == 0.0;
       const velocityInRange = (v: number) => v <= 1.0 && v >= 0.0;
       const offsetsInRange = (v: number) => v <= 1.0 && v >= -1.0;
   
