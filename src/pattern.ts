@@ -5,6 +5,15 @@ type TensorType = number[][][]
 type MatrixType = number[][]
 type FLOAT32 = 'float32'
 
+class PatternSizeError extends Error {
+  constructor (expectedSize: number, gotSize: number) {
+    const m = `Expected pattern size ${expectedSize}, got size: ${gotSize}`
+    super(m)
+
+    Object.setPrototypeOf(this, PatternSizeError.prototype)
+  }
+}
+
 function transpose2d (matrix: MatrixType): MatrixType {
   return matrix[0].map((_, i) => matrix.map(row => row[i]))
 }
@@ -158,4 +167,4 @@ class Pattern extends BasePattern implements IPattern {
   }
 }
 
-export default Pattern
+export { Pattern, PatternSizeError }

@@ -3,7 +3,7 @@ import path from 'path'
 import { InferenceSession, Tensor } from 'onnxruntime'
 import { LOOP_DURATION, CHANNELS } from './constants'
 import { zeroArray } from './util'
-import Pattern from './pattern'
+import { Pattern } from './pattern'
 import { stringify } from 'querystring'
 
 const MODEL_NAME = 'latest.onnx'

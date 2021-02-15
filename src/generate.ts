@@ -1,6 +1,6 @@
 import { Tensor } from 'onnxruntime'
 import ONNXModel from './model'
-import Pattern from './pattern'
+import { Pattern, PatternSizeError } from './pattern'
 import {
   LOOP_DURATION,
   CHANNELS,
@@ -27,7 +27,9 @@ class PatternDataMatrix {
 
   empty (): Float32Array[][] {
     return Array.from({ length: this.length }, _ => {
-      return Array.from({ length: this.length }, _ => new Float32Array(this.outputShape))
+      return Array.from({ length: this.length }, _ => {
+        return new Float32Array(this.outputSize)
+      })
     })
   }
 
@@ -36,16 +38,25 @@ class PatternDataMatrix {
   }
 
   set length (value: number) {
-    this._length = length
+    this._length = value
+    this._T = this.empty()
   }
 
-  get size (): number {
+  get matrixSize (): number {
     return this.length ** 2
+  }
+
+  get outputSize (): number {
+    return this.outputShape[0] * this.outputShape[1] * this.outputShape[2]
   }
 
   append (p: Float32Array, i: number, j: number): void {
     if (i < this.length && j < this.length) {
-      this._T[i][j] = p
+      if (p.length === this.outputSize) {
+        this._T[i][j] = p
+      } else {
+        throw new PatternSizeError(this.outputSize, p.length)
+      }
     } else {
       console.warn(`Index (${i},${j}) is out of bounds for data matrix of size ${this.length}`)
     }
@@ -55,6 +66,8 @@ class PatternDataMatrix {
     return this._T[i][j]
   }
 }
+
+export { PatternDataMatrix }
 
 class Generator {
   /**

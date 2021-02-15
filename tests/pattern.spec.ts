@@ -1,5 +1,5 @@
 import assert from "assert";
-import Pattern from "../src/pattern";
+import { Pattern } from "../src/pattern";
 import { transpose2d } from "../src/pattern";
 
 import { arraysEqual, testPattern } from "./helpers";

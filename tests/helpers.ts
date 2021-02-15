@@ -1,6 +1,6 @@
 import { pitchToIndexMap } from "../src/util";
 import { DRUM_PITCH_CLASSES } from "../src/constants";
-import Pattern from "../src/pattern";
+import { Pattern } from "../src/pattern";
 import { readMidiFile } from "../src/midi";
 
 

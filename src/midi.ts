@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'fs'
 
-import Pattern from './pattern'
+import { Pattern } from './pattern'
 import { LOOP_DURATION, CHANNELS } from './constants'
 const JZZ = require('jzz')
 require('jzz-midi-smf')(JZZ)
