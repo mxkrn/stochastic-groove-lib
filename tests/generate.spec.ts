@@ -3,11 +3,12 @@ import { performance } from "perf_hooks";
 import { CHANNELS, LOOP_DURATION, MAX_ONSET_THRESHOLD, MIN_ONSET_THRESHOLD, NOTE_DROPOUT, NUM_SAMPLES } from "../src/constants";
 
 import { Pattern, PatternSizeError } from "../src/pattern"
-import { PatternDataMatrix } from "../src/generate"
+import { PatternDataMatrix, applyOnsetThreshold } from "../src/generate"
 import Generator from "../src/generate";
 import { testPattern, arraysEqual } from "./helpers"
 import { linspace } from "../src/util";
 import ONNXModel from "../src/model";
+import { Tensor } from "onnxruntime";
 
 describe("PatternDataMatrix", function() {
 
@@ -165,3 +166,19 @@ describe("Generator", function () {
     }
   });
 });
+
+describe("applyOnsetThreshold", function() {
+  it("applies onset properly", async function() {
+    const data = new Float32Array(8)
+    const expectedDims = [1, 4, 2]
+    data.fill(0.5)
+    let gotPattern = applyOnsetThreshold(new Tensor("float32", data, expectedDims), expectedDims, 0.4)
+    let expected = Array.from({ length: 8 }, _ => 1.)
+    arraysEqual(Array.from(gotPattern.data), expected)
+
+    data.fill(0.3)
+    gotPattern = applyOnsetThreshold(new Tensor("float32", data, expectedDims), expectedDims, 0.4)
+    expected = Array.from({ length: 8 }, _ => 0.)
+    arraysEqual(Array.from(gotPattern.data), expected)
+  })
+})

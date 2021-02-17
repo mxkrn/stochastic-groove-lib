@@ -67,8 +67,6 @@ class PatternDataMatrix {
   }
 }
 
-export { PatternDataMatrix }
-
 class Generator {
   /**
    * This class wraps our loaded ONNX model and fills an Object (data)
@@ -319,5 +317,7 @@ function applyOnsetThreshold (onsets: Tensor, dims: number[], threshold: number)
   })
   return onsetsPattern
 }
+
+export { applyOnsetThreshold, PatternDataMatrix }
 
 export default Generator
