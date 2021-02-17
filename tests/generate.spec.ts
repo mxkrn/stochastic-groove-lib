@@ -1,11 +1,13 @@
 import assert from "assert"
 import { performance } from "perf_hooks";
-import { CHANNELS, LOOP_DURATION, NOTE_DROPOUT, NUM_SAMPLES } from "../src/constants";
+import { CHANNELS, LOOP_DURATION, MAX_ONSET_THRESHOLD, MIN_ONSET_THRESHOLD, NOTE_DROPOUT, NUM_SAMPLES } from "../src/constants";
 
-import { PatternSizeError } from "../src/pattern"
+import { Pattern, PatternSizeError } from "../src/pattern"
 import { PatternDataMatrix } from "../src/generate"
 import Generator from "../src/generate";
 import { testPattern, arraysEqual } from "./helpers"
+import { linspace } from "../src/util";
+import ONNXModel from "../src/model";
 
 describe("PatternDataMatrix", function() {
 
@@ -64,27 +66,102 @@ describe("PatternDataMatrix", function() {
 })
 
 describe("Generator", function () {
-  it("builds and initializes methods and variables", async function () {
-    const [onsetsPattern, velocitiesPattern, offsetsPattern] = await testPattern();
-    const stbuild = performance.now();
+  const onsetsData = Float32Array.from({ length: 144 }, _ => 1.)
+  const velocitiesData = Float32Array.from(onsetsData).fill(0.5)
+  const offsetsData = Float32Array.from(onsetsData).fill(0.)
+  const expectedDims = [1, 16, 9]
+
+  it("constructs, sets and gets attributes", async function() {
 
     const generator = await Generator.build(
-      onsetsPattern.data,
-      velocitiesPattern.data,
-      offsetsPattern.data,
-      NUM_SAMPLES,
-      NOTE_DROPOUT
-    );
-    console.log("build time:", performance.now() - stbuild);
+        onsetsData,
+        velocitiesData,
+        offsetsData
+    )
+
+    // assert.strictEqual(typeof generator.model, ONNXModel)
+    const got = generator.minOnsetThreshold
+    assert.strictEqual(generator.minOnsetThreshold, MIN_ONSET_THRESHOLD)
+    const minThreshold = 0.1
+    generator.minOnsetThreshold = minThreshold
+    assert.strictEqual(generator.minOnsetThreshold, minThreshold)
+
+    assert.strictEqual(generator.maxOnsetThreshold, MAX_ONSET_THRESHOLD)
+    const maxThreshold = 0.9
+    generator.maxOnsetThreshold = maxThreshold
+    assert.strictEqual(generator.maxOnsetThreshold, maxThreshold)
+
+    const expectedRange = linspace(minThreshold, maxThreshold, generator.axisLength)
+    arraysEqual(generator.onsetThresholdRange, expectedRange)
+    arraysEqual(generator.dims, [generator.axisLength, LOOP_DURATION, CHANNELS])
+
+    assert.strictEqual(generator.numSamples, NUM_SAMPLES)
+    const numSamples = [60, 64, 68]
+    for (let i = 0; i < numSamples.length; i++) {
+        generator.numSamples = numSamples[i]
+        assert.strictEqual(generator.numSamples, numSamples[i])
+        assert.strictEqual(generator.axisLength, 8)    
+    }
+
+    arraysEqual(generator.outputShape, expectedDims)
+    assert.strictEqual(generator.noteDropout, NOTE_DROPOUT)
+    assert.strictEqual(generator.minNoteDropout, NOTE_DROPOUT - 0.05)
+    assert.strictEqual(generator.maxNoteDropout, NOTE_DROPOUT + 0.05)
+    const noteDropout = 0.9
+    generator.noteDropout = noteDropout
+    assert.strictEqual(generator.noteDropout, noteDropout)
+
+    assert.strictEqual(generator.channels, CHANNELS)
+    const channels = 10
+    generator.channels = 10
+    assert.strictEqual(generator.channels, channels)
+    arraysEqual(generator.outputShape, [1, 16, 10])
+
+    assert.strictEqual(generator.loopDuration, LOOP_DURATION)
+    const loopDuration = 32
+    generator.loopDuration = loopDuration
+    assert.strictEqual(generator.loopDuration, loopDuration)
+    arraysEqual(generator.outputShape, [1, 32, 10])
+  }),
+  it("returns empty matrix before running", async function() {
+    const generator = await Generator.build(
+        onsetsData,
+        velocitiesData,
+        offsetsData
+    )
+    arraysEqual(generator.onsets.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
+    arraysEqual(generator.velocities.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
+    arraysEqual(generator.offsets.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
+
+  }),
+  it("correct size of batchInput", async function() {
+    const generator = await Generator.build(
+      onsetsData,
+      velocitiesData,
+      offsetsData
+    )
+    const expectedBatchedInputSize = Math.sqrt(NUM_SAMPLES)*LOOP_DURATION*CHANNELS*3
+    assert.strictEqual(expectedBatchedInputSize, generator.batchedInput.data.length)
+  })
+  it("builds and initializes methods and variables", async function () {
+    const generator = await Generator.build(
+      onsetsData,
+      velocitiesData,
+      offsetsData
+    )
     const st = performance.now();
     await generator.run();
     console.log("time to populate:", performance.now() - st);
-    const onsets = generator.onsets;
-    assert.strictEqual(onsets.matrixSize, generator.numSamples);
+
+    assert.strictEqual(generator.onsets.matrixSize, generator.numSamples)
+    assert.strictEqual(generator.velocities.matrixSize, generator.numSamples)
+    assert.strictEqual(generator.offsets.matrixSize, generator.numSamples)
+
+    const onsets = generator.onsets
     for (let i = 0; i < onsets.length; i++) {
-        for (let j = 0; j < onsets.length; j++) {
-            assert.strictEqual(onsets.sample(i, j).length, onsetsPattern.data.length)
-        }
+      for (let j = 0; j < onsets.length; j++) {
+        assert.strictEqual(onsets.sample(i, j).length, onsetsData.length)
+      }
     }
   });
 });

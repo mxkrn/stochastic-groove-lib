@@ -142,19 +142,19 @@ class Generator {
   }
 
   get minOnsetThreshold (): number {
-    return this._minNoteDropout
+    return this._minOnsetThreshold
   }
 
   set minOnsetThreshold (value: number) {
-    this._minNoteDropout = value
+    this._minOnsetThreshold = value
   }
 
   get maxOnsetThreshold (): number {
-    return this._maxNoteDropout
+    return this._maxOnsetThreshold
   }
 
   set maxOnsetThreshold (value: number) {
-    this._maxNoteDropout = value
+    this._maxOnsetThreshold = value
   }
 
   get onsetThresholdRange (): number[] {
