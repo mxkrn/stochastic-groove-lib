@@ -1,5 +1,6 @@
 import assert from 'assert'
 import { Tensor } from 'onnxruntime'
+import { CHANNELS } from './constants'
 
 type TensorType = number[][][]
 type MatrixType = number[][]
@@ -25,6 +26,7 @@ interface IPattern extends Pattern {
   transpose: () => TensorType
   tensor: () => TensorType
   view: (dims: number[]) => TensorType
+  setcell: (v: number, step: number, instrument: number) => void
 }
 
 class BasePattern extends Tensor<FLOAT32> {
@@ -134,8 +136,8 @@ class Pattern extends BasePattern implements IPattern {
 
   concatenate (pattern: Pattern, axis: number): Pattern {
     /**
-         * Concatenates two patterns along a given axis
-         */
+    * Concatenates two patterns along a given axis
+    */
     assert.ok(axis >= 0, 'Negative array indexing not allowed')
     let concatTensor = this.tensor()
     const tensor = pattern.tensor()
@@ -164,6 +166,13 @@ class Pattern extends BasePattern implements IPattern {
       }
     }
     return new Pattern(concatTensor, dims)
+  }
+
+  setcell (value: number, step: number, instrument: number): void {
+    if (this.batchSize == 1) {
+        const index = (instrument - 1) * this.dims[1] + step
+        this.data[index] = value
+    }
   }
 }
 

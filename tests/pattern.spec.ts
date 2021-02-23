@@ -137,3 +137,34 @@ describe("transpose2d", function() {
         arraysEqual(got, expected);
     })
 })
+
+describe("setcell", function() {
+    it("sets internal data to expected value", function() {
+        const dims = [1, 5, 2]
+        const data = new Float32Array(dims[0] * dims[1] * dims[2])
+        const pattern = new Pattern(data, dims)
+
+        const c = [3, 2];
+        const index = (c[1] - 1) * dims[1] + c[0]
+        pattern.setcell(1., c[0], c[1]);
+        for (let i = 0; i < pattern.length; i++) {
+            if (i == index) {
+                assert.strictEqual(pattern.data[i], 1.)
+            } else {
+                assert.strictEqual(pattern.data[i], 0.)
+            }
+        }
+    })
+    it("doesn't change when batchSize > 1", function() {
+        const dims = [2, 5, 2]
+        const data = new Float32Array(dims[0] * dims[1] * dims[2])
+        const pattern = new Pattern(data, dims)
+
+        const c = [3, 2];
+        const index = (c[1] - 1) * dims[1] + c[0]
+        pattern.setcell(1., c[0], c[1]);
+        for (let i = 0; i < pattern.length; i++) {
+            assert.strictEqual(pattern.data[i], 0.)
+        }
+    })
+})
