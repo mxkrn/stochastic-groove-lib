@@ -6,7 +6,7 @@ import { zeroArray } from './util'
 import { Pattern } from './pattern'
 import { stringify } from 'querystring'
 
-const MODEL_NAME = 'latest.onnx'
+const MODEL_NAME = 'syncopate.onnx'
 const DEFAULT_MODEL = path.dirname(__dirname) + '/assets/models/' + MODEL_NAME
 const LATENT_SIZE = 2
 
