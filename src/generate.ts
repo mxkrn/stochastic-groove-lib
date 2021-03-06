@@ -240,7 +240,7 @@ class Generator {
     sequenceLength: number = LOOP_DURATION
   ): Promise<Generator> {
     try {
-      const model = await ONNXModel.build()
+      const model = await ONNXModel.build('syncopate')
       return new Generator(
         model,
         onsets,

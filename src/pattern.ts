@@ -1,6 +1,5 @@
 import assert from 'assert'
 import { Tensor } from 'onnxruntime'
-import { CHANNELS } from './constants'
 
 type TensorType = number[][][]
 type MatrixType = number[][]
