@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "declaration": true,
     "noImplicitAny": false,
-    "strictNullChecks": true,
+    "strictNullChecks": true
   },
-  "exclude": ["tests", "dist"]
+  "exclude": ["tests","bin", "dist"]
 }
