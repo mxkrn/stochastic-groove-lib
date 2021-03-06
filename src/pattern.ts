@@ -169,9 +169,9 @@ class Pattern extends BasePattern implements IPattern {
   }
 
   setcell (value: number, step: number, instrument: number): void {
-    if (this.batchSize == 1) {
-        const index = (instrument - 1) * this.dims[1] + step
-        this.data[index] = value
+    if (this.batchSize === 1) {
+      const index = (instrument - 1) * this.dims[1] + step
+      this.data[index] = value
     }
   }
 }
