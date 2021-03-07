@@ -141,8 +141,10 @@ describe("Generator", function () {
       velocitiesData,
       offsetsData
     )
+    const dims = [1, LOOP_DURATION, CHANNELS]
+    const onsetsPattern = new Pattern(onsetsData, dims)
     const expectedBatchedInputSize = Math.sqrt(NUM_SAMPLES)*LOOP_DURATION*CHANNELS*3
-    assert.strictEqual(expectedBatchedInputSize, generator.batchedInput.data.length)
+    assert.strictEqual(expectedBatchedInputSize, generator.batchedInput(onsetsPattern, Math.sqrt(NUM_SAMPLES)).data.length)
   })
   it("builds and initializes methods and variables", async function () {
     const generator = await Generator.build(

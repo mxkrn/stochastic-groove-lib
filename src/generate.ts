@@ -69,10 +69,10 @@ class PatternDataMatrix {
 
 class Generator {
   /**
-   * This class wraps our loaded ONNX model and fills an Object (data)
+   * This class wraps our loaded ONNX syncopateModel and fills an Object (data)
    * with predicted patterns
    *
-   * @model           Instance of ONNXModel
+   * @syncopateModel           Instance of ONNXModel
    * @onsets          Onsets array to be used as input; must be a
                       flat Typed buffer
    * @velocities      Velocities array to be used as input; must be a
@@ -86,7 +86,8 @@ class Generator {
    * @channels        Number of channels in input sequence a.k.a. instruments
    * @loopDuration    Length of sequence loop in 16th notes
    */
-  model: ONNXModel
+  syncopateModel: ONNXModel
+  grooveModel: ONNXModel
   _channels: number
   _loopDuration: number
   _outputShape: [number, number, number]
@@ -106,7 +107,8 @@ class Generator {
   _offsetsDataMatrix: PatternDataMatrix
 
   constructor (
-    model: ONNXModel,
+    syncopateModel: ONNXModel,
+    grooveModel: ONNXModel,
     onsets: Float32Array,
     velocities: Float32Array,
     offsets: Float32Array,
@@ -117,12 +119,13 @@ class Generator {
     minOnsetThreshold: number,
     maxOnsetThreshold: number
   ) {
-    if (typeof model === 'undefined') {
+    if (typeof syncopateModel === 'undefined') {
       throw new Error(
         'cannot directly access class constructor - use Generator.build(<params>) instead.'
       )
     }
-    this.model = model
+    this.syncopateModel = syncopateModel
+    this.grooveModel = grooveModel
     this._numSamples = numSamples
     this._noteDropout = noteDropout
     this._channels = channels
@@ -240,9 +243,11 @@ class Generator {
     sequenceLength: number = LOOP_DURATION
   ): Promise<Generator> {
     try {
-      const model = await ONNXModel.build('syncopate')
+      const syncopateModel = await ONNXModel.build("syncopate")
+      const grooveModel = await ONNXModel.build("groove")
       return new Generator(
-        model,
+        syncopateModel,
+        grooveModel,
         onsets,
         velocities,
         offsets,
@@ -259,15 +264,18 @@ class Generator {
     }
   }
 
-  get batchedInput (): Pattern {
+  batchedInput (onsetsPattern: Pattern, batchSize: number): Pattern {
     /**
      * Repeats input pattern batch_size times and returns a flat typed buffer.
      */
-    let pattern = this.onsetsPattern.concatenate(this.velocitiesPattern, 2)
-    pattern = pattern.concatenate(this.offsetsPattern, 2)
+    const dims = onsetsPattern.shape
+    const velocities = new Pattern(new Float32Array(onsetsPattern.data.length), dims)
+    const offsets = new Pattern(new Float32Array(onsetsPattern.data.length), onsetsPattern.shape)
+    let pattern = onsetsPattern.concatenate(velocities, 2)
+    pattern = pattern.concatenate(offsets, 2)
 
     let batch = pattern
-    for (let i = 1; i < this.axisLength; i++) {
+    for (let i = 0; i < batchSize - 1; i++) {
       batch = batch.concatenate(pattern, 0)
     }
     return batch
@@ -275,22 +283,32 @@ class Generator {
 
   async run (): Promise<void> {
     /**
-     * Generates model predictions as parameterized
+     * Generates syncopateModel predictions as parameterized
      * by onsetThresholdRange, noteDropout, and numSamples.
      */
-    const model = this.model
+    const syncopateModel = this.syncopateModel
+    const grooveModel = this.grooveModel
     const noteDropouts = linspace(this._minNoteDropout, this._maxNoteDropout, this.axisLength)
     const onsetThresholds = linspace(this._minOnsetThreshold, this._maxNoteDropout, this.axisLength)
+    
+    let grooveInput;
 
     for (let i = 0; i < this.axisLength; i++) {
       const threshold = onsetThresholds[i]
       const dropout = noteDropouts[i]
-      const output = await model.forward(this.batchedInput, dropout)
-
-      const onsetsBatch = applyOnsetThreshold(output.onsets, this.dims, threshold).tensor()
-      const velocitiesBatch = new Pattern(output.velocities, this.dims).tensor()
-      const offsetsBatch = new Pattern(output.offsets, this.dims).tensor()
-
+      const syncopateInputBatch = this.batchedInput(this.onsetsPattern, this.axisLength)
+      const syncopateOutput = await syncopateModel.forward(syncopateInputBatch, dropout)
+      
+      const syncopateOnsets = applyOnsetThreshold(syncopateOutput.onsets, this.dims, threshold)
+      
+      // TODO: Test performance if we concatenate all onsets and run only a single
+      const grooveInputBatch = this.batchedInput(syncopateOnsets, 1)
+      const grooveOutput = await grooveModel.forward(grooveInputBatch, 1.)
+      
+      const onsetsBatch = syncopateOnsets.tensor()
+      const velocitiesBatch = new Pattern(grooveOutput.velocities, this.dims).tensor()
+      const offsetsBatch = new Pattern(grooveOutput.offsets, this.dims).tensor()
+      
       for (let j = 0; j < this.axisLength; j++) {
         // TODO: Probably need to transpose all vectors
         const onsets = new Pattern([onsetsBatch[j]], this.outputShape)

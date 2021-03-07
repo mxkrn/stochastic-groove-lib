@@ -56,8 +56,8 @@ class BasePattern extends Tensor<FLOAT32> {
 
 // TODO: Error handling
 class Pattern extends BasePattern implements IPattern {
-  get shape (): readonly number[] {
-    return this.dims
+  get shape (): number[] {
+    return [this.batchSize, this.sequenceLength, this.channels]
   }
 
   get length (): number {
