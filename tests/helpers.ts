@@ -5,7 +5,7 @@ import { readMidiFile } from "../src/midi";
 
 
 async function testPattern(): Promise<[Pattern, Pattern, Pattern]> {
-  const filePath = "tests/data/Variation_02.mid";
+  const filePath = "tests/fixtures/Variation_02.mid";
   const pitchMapping = pitchToIndexMap(
     DRUM_PITCH_CLASSES["pitch"],
     DRUM_PITCH_CLASSES["index"]

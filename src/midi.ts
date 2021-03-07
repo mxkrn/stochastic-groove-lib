@@ -2,7 +2,7 @@
 import fs from 'fs'
 
 import { Pattern } from './pattern'
-import { LOOP_DURATION, CHANNELS } from './constants'
+import { LOOP_DURATION, CHANNELS, DRUM_PITCH_CLASSES } from './constants'
 const JZZ = require('jzz')
 require('jzz-midi-smf')(JZZ)
 
@@ -35,7 +35,7 @@ async function readMidiFile (filePath: string, pitchMapping: Record<string, numb
         const [stepIndex, channelIndex, velocity, offset] = processMidiEvent(event, pitchMapping, stepsPer16th)
         if (stepIndex < LOOP_DURATION) {
           onsets[0][stepIndex][channelIndex] = 1.0
-          velocities[0][stepIndex][channelIndex] = velocity
+          velocities[0][stepIndex][channelIndex] = velocity / 127
           offsets[0][stepIndex][channelIndex] = offset
         }
       }
@@ -44,8 +44,37 @@ async function readMidiFile (filePath: string, pitchMapping: Record<string, numb
 
   const onsetsPattern = new Pattern(onsets, [1, LOOP_DURATION, CHANNELS])
   const velocitiesPattern = new Pattern(velocities, [1, LOOP_DURATION, CHANNELS])
-  const offsetsPattern = new Pattern(onsets, [1, LOOP_DURATION, CHANNELS])
+  const offsetsPattern = new Pattern(offsets, [1, LOOP_DURATION, CHANNELS])
   return [onsetsPattern, velocitiesPattern, offsetsPattern]
 }
 
-export { readMidiFile }
+async function writeMidiFile (onsetsPattern: Pattern, velocitiesPattern: Pattern, offsetsPattern: Pattern, filePath: string): Promise<void> {
+  if (onsetsPattern.shape[0] !== 1) {
+    throw new Error('Only patterns of batch size 1 can be written to MIDI')
+  }
+  const ticksPerBeat = 96
+  const smf = new JZZ.MIDI.SMF(0, ticksPerBeat)
+  smf.push(new JZZ.MIDI.SMF.MTrk())
+
+  smf[0].smfBPM(120)
+  const onsets = onsetsPattern.tensor()[0]
+  const velocities = velocitiesPattern.tensor()[0]
+  const offsets = offsetsPattern.tensor()[0]
+
+  for (let step = 0; step < LOOP_DURATION; step++) {
+    const tick = ticksPerBeat * step / 4
+    // smf[0].tick(tick)
+    for (let instrument = 0; instrument < CHANNELS; instrument++) {
+      if (onsets[step][instrument] === 1) {
+        const offsetTick = tick + (ticksPerBeat / 4) * offsets[step][instrument]
+        const pitch = DRUM_PITCH_CLASSES.drum_index[instrument.toString()]
+        const velocity = Math.round(velocities[step][instrument] * 127)
+        smf[0].tick(Math.round(offsetTick)).note(0, pitch, velocity, ticksPerBeat / 24)
+      }
+    }
+  }
+  smf[0].tick(LOOP_DURATION * ticksPerBeat).smfEndOfTrack()
+  fs.writeFileSync(filePath, smf.dump(), 'binary')
+}
+
+export { readMidiFile, writeMidiFile }
