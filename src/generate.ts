@@ -243,8 +243,8 @@ class Generator {
     sequenceLength: number = LOOP_DURATION
   ): Promise<Generator> {
     try {
-      const syncopateModel = await ONNXModel.build("syncopate")
-      const grooveModel = await ONNXModel.build("groove")
+      const syncopateModel = await ONNXModel.build('syncopate')
+      const grooveModel = await ONNXModel.build('groove')
       return new Generator(
         syncopateModel,
         grooveModel,
@@ -290,25 +290,23 @@ class Generator {
     const grooveModel = this.grooveModel
     const noteDropouts = linspace(this._minNoteDropout, this._maxNoteDropout, this.axisLength)
     const onsetThresholds = linspace(this._minOnsetThreshold, this._maxNoteDropout, this.axisLength)
-    
-    let grooveInput;
 
     for (let i = 0; i < this.axisLength; i++) {
       const threshold = onsetThresholds[i]
       const dropout = noteDropouts[i]
       const syncopateInputBatch = this.batchedInput(this.onsetsPattern, this.axisLength)
       const syncopateOutput = await syncopateModel.forward(syncopateInputBatch, dropout)
-      
+
       const syncopateOnsets = applyOnsetThreshold(syncopateOutput.onsets, this.dims, threshold)
-      
+
       // TODO: Test performance if we concatenate all onsets and run only a single
       const grooveInputBatch = this.batchedInput(syncopateOnsets, 1)
-      const grooveOutput = await grooveModel.forward(grooveInputBatch, 1.)
-      
+      const grooveOutput = await grooveModel.forward(grooveInputBatch, 1)
+
       const onsetsBatch = syncopateOnsets.tensor()
       const velocitiesBatch = new Pattern(grooveOutput.velocities, this.dims).tensor()
       const offsetsBatch = new Pattern(grooveOutput.offsets, this.dims).tensor()
-      
+
       for (let j = 0; j < this.axisLength; j++) {
         // TODO: Probably need to transpose all vectors
         const onsets = new Pattern([onsetsBatch[j]], this.outputShape)
@@ -326,14 +324,14 @@ class Generator {
 
 function applyOnsetThreshold (onsets: Tensor, dims: number[], threshold: number): Pattern {
   const onsetsPattern = new Pattern(onsets, dims)
-  onsetsPattern.data.map(v => {
+  const outputArray = onsetsPattern.data.map(v => {
     if (v < threshold) {
       return 0.0
     } else {
       return 1.0
     }
   })
-  return onsetsPattern
+  return new Pattern(outputArray, dims)
 }
 
 export { applyOnsetThreshold, PatternDataMatrix }

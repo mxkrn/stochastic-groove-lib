@@ -27,7 +27,7 @@ describe("Pattern", function() {
                             [[5., 6.], [7., 8.]], 
                             [[9., 10.], [11., 12.]]];
         const got = pattern.tensor();
-        arraysEqual(expected, got);
+        assert.ok(arraysEqual(expected, got))
     })
     it(".view() handles valid data correctly", function() {
         const data = Float32Array.from([1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12.]);
@@ -38,14 +38,14 @@ describe("Pattern", function() {
                             [[5., 6., 7., 8.]], 
                             [[9., 10., 11., 12.]]];
         let got = pattern.view(input);
-        arraysEqual(expected, got); 
+        assert.ok(arraysEqual(expected, got))
         
         input = [1, 3, 4];
         expected = [[[1., 2., 3., 4.],
                      [5., 6., 7., 8.],
                      [9., 10., 11., 12.]]];
         got = pattern.view(input);
-        arraysEqual(expected, got);
+        assert.ok(arraysEqual(expected, got))
 
     })
     it(".transpose() handles valid data correctly", function() {
@@ -61,9 +61,9 @@ describe("Pattern", function() {
                         [4., 8., 12.]],
                         [[13., 17., 21.], 
                         [14., 18., 22.],
-                        [15., 19., 22.],
-                        [16., 20., 23.]]];
-        arraysEqual(expected, got);
+                        [15., 19., 23.],
+                        [16., 20., 24.]]];
+        assert.ok(arraysEqual(expected, got))
     })
     it(".concatenate() handles valid data correctly", function() {
         const dims = [2, 3, 1]
@@ -76,20 +76,20 @@ describe("Pattern", function() {
                         [[4.],[5.],[6.]],
                         [[1.],[2.],[3.]],
                         [[4.],[5.],[6.]]];
-        arraysEqual(got.tensor(), expected);
+        assert.ok(arraysEqual(got.tensor(), expected))
 
         got = pattern.concatenate(pattern2, 1);
         expected = [[[1.],[2.],[3.],[1.],[2.],[3.]], 
                     [[4.],[5.],[6.],[4.],[5.],[6.]]];
-        arraysEqual(got.tensor(), expected);
+        assert.ok(arraysEqual(got.tensor(), expected))
 
         got = pattern.concatenate(pattern2, 2);
-        expected = [[[1., 1.], [2., 2.], [3., 3.],
-                     [4., 4.], [5., 5.], [6., 6.]]];
-        arraysEqual(got.tensor(), expected);
+        expected = [[[1., 1.], [2., 2.], [3., 3.]],
+                    [[4., 4.], [5., 5.], [6., 6.]]];
+        const gotArray = got.tensor()
+        assert.ok(arraysEqual(gotArray, expected))
     })
   })
-
 
   describe("Pattern", function () {
     it("loads from midi", async function () {
@@ -117,7 +117,7 @@ describe("Pattern", function() {
           "offset values not in range [-1, 1]"
         );
         assert.ok(
-          offsetsPattern.data.every(velocityInRange),
+          velocitiesPattern.data.every(velocityInRange),
           "velocity values not in range [0, 1]"
         );
       }
@@ -134,7 +134,7 @@ describe("transpose2d", function() {
                           [3., 7., 11.],
                           [4., 8., 12.]];
         const got = transpose2d(input);
-        arraysEqual(got, expected);
+        assert.ok(arraysEqual(got, expected))
     })
 })
 

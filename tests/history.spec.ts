@@ -37,10 +37,10 @@ describe("PatternHistory", function () {
     }
     let gotPattern = Array.from(history.sample(0).data)
     let expectedPattern = Array.from(pattern.data)
-    arraysEqual(gotPattern, expectedPattern)
+    assert.ok(arraysEqual(gotPattern, expectedPattern))
 
     gotPattern = Array.from(history.sample(1).data)
     expectedPattern = Array.from(newPattern.data)
-    arraysEqual(gotPattern, expectedPattern)
+    assert.ok(arraysEqual(gotPattern, expectedPattern))
   })
 })

@@ -28,12 +28,26 @@ async function getRequestBody(): Promise<RequestBodyType> {
   };
 }
 
-function arraysEqual(a: unknown[], b: unknown[]): boolean {
+function arraysEqual(a, b): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
+    if (a[0].constructor === Array) {
+        for (let j = 0; j < a[0].length; ++j) {
+            if (a[0][0].constructor === Array) {
+                for (let k = 0; k < a[0][0].length; ++k) {
+                    const aValue = a[i][j][k]
+                    const bValue = b[i][j][k]
+                    if (aValue !== bValue) return false;   
+                }
+            } else {
+                if (a[i][j] !== b[i][j]) return false;
+            }
+        }
+    } else {
+        if (a[i] !== b[i]) return false;
+    }
   }
   return true;
 }

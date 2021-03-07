@@ -34,14 +34,14 @@ describe("PatternDataMatrix", function() {
     assert.strictEqual(emptyDataMatrix.length, length)
     assert.strictEqual(emptyDataMatrix[0].length, length)
     assert.strictEqual(emptyDataMatrix[0][0].length, LOOP_DURATION * CHANNELS)
-    arraysEqual(Array.from(emptyDataMatrix[0][0]), Array.from({ length: LOOP_DURATION * CHANNELS }, _ => 0.))
+    assert.ok(arraysEqual(Array.from(emptyDataMatrix[0][0]), Array.from({ length: LOOP_DURATION * CHANNELS }, _ => 0.)))
   }),
   it("appends correct patterns", function() {
     for (let i = 0; i < length; i++) {
       for (let j = 0; j < length; j++) {
         dataMatrix.append(pattern, i, j)
         const gotPattern = dataMatrix.sample(i, j)
-        arraysEqual(Array.from(gotPattern), Array.from(pattern))
+        assert.ok(arraysEqual(Array.from(gotPattern), Array.from(pattern)))
       }
     } 
   }),
@@ -93,8 +93,8 @@ describe("Generator", function () {
     assert.strictEqual(generator.maxOnsetThreshold, maxThreshold)
 
     const expectedRange = linspace(minThreshold, maxThreshold, generator.axisLength)
-    arraysEqual(generator.onsetThresholdRange, expectedRange)
-    arraysEqual(generator.dims, [generator.axisLength, LOOP_DURATION, CHANNELS])
+    assert.ok(arraysEqual(generator.onsetThresholdRange, expectedRange))
+    assert.ok(arraysEqual(generator.dims, [generator.axisLength, LOOP_DURATION, CHANNELS]))
 
     assert.strictEqual(generator.numSamples, NUM_SAMPLES)
     const numSamples = [60, 64, 68]
@@ -104,7 +104,7 @@ describe("Generator", function () {
         assert.strictEqual(generator.axisLength, 8)    
     }
 
-    arraysEqual(generator.outputShape, expectedDims)
+    assert.ok(arraysEqual(generator.outputShape, expectedDims))
     assert.strictEqual(generator.noteDropout, NOTE_DROPOUT)
     assert.strictEqual(generator.minNoteDropout, NOTE_DROPOUT - 0.05)
     assert.strictEqual(generator.maxNoteDropout, NOTE_DROPOUT + 0.05)
@@ -116,13 +116,13 @@ describe("Generator", function () {
     const channels = 10
     generator.channels = 10
     assert.strictEqual(generator.channels, channels)
-    arraysEqual(generator.outputShape, [1, 16, 10])
+    assert.ok(arraysEqual(generator.outputShape, [1, 16, 10]))
 
     assert.strictEqual(generator.loopDuration, LOOP_DURATION)
     const loopDuration = 32
     generator.loopDuration = loopDuration
     assert.strictEqual(generator.loopDuration, loopDuration)
-    arraysEqual(generator.outputShape, [1, 32, 10])
+    assert.ok(arraysEqual(generator.outputShape, [1, 32, 10]))
   }),
   it("returns empty matrix before running", async function() {
     const generator = await Generator.build(
@@ -130,9 +130,9 @@ describe("Generator", function () {
         velocitiesData,
         offsetsData
     )
-    arraysEqual(generator.onsets.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
-    arraysEqual(generator.velocities.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
-    arraysEqual(generator.offsets.outputShape, [generator.axisLength, LOOP_DURATION, CHANNELS])
+    assert.ok(arraysEqual(generator.onsets.outputShape, [1, LOOP_DURATION, CHANNELS]))
+    assert.ok(arraysEqual(generator.velocities.outputShape, [1, LOOP_DURATION, CHANNELS]))
+    assert.ok(arraysEqual(generator.offsets.outputShape, [1, LOOP_DURATION, CHANNELS]))
 
   }),
   it("correct size of batchInput", async function() {
@@ -176,11 +176,11 @@ describe("applyOnsetThreshold", function() {
     data.fill(0.5)
     let gotPattern = applyOnsetThreshold(new Tensor("float32", data, expectedDims), expectedDims, 0.4)
     let expected = Array.from({ length: 8 }, _ => 1.)
-    arraysEqual(Array.from(gotPattern.data), expected)
+    assert.ok(arraysEqual(Array.from(gotPattern.data), expected))
 
     data.fill(0.3)
     gotPattern = applyOnsetThreshold(new Tensor("float32", data, expectedDims), expectedDims, 0.4)
     expected = Array.from({ length: 8 }, _ => 0.)
-    arraysEqual(Array.from(gotPattern.data), expected)
+    assert.ok(arraysEqual(Array.from(gotPattern.data), expected))
   })
 })

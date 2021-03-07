@@ -10,7 +10,7 @@ describe("linspace", function() {
     const length = 5;
     const expected = [0., 0.2, 0.4, 0.6, 0.8, 1.0];
     const got = linspace(min, max, length);
-    arraysEqual(got, expected)
+    assert.ok(arraysEqual(got, expected))
   })
 })
 
