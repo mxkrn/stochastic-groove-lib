@@ -1,18 +1,23 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+const path = require("path");
 const parseArgs = require("minimist");
 
 const { pitchToIndexMap } = require("../dist/util");
 const { DRUM_PITCH_CLASSES } = require("../dist/constants");
 const { Pattern } = require("../dist/pattern");
-const { readMidiFile } = require("../dist/midi");
+const { readMidiFile, writeMidiFile } = require("../dist/midi");
 const ONNXModel = require("../dist/model").default;
 const { applyOnsetThreshold } = require("../dist/generate");
 
 const argv = parseArgs(process.argv.slice(2));
-const filePath = argv.filepath;
+const loadDir = "/mnt/c/Users/maxkr/Music/samples/midi/stochastic-groove/"
+const filePath = argv.filepath
+const threshold = argv.threshold || 0.5
+const dropout = argv.dropout || 1.
 console.log(`Loading MIDI from ${filePath}`);
+console.log(`Using onset threshold value: ${threshold}`)
+console.log(`Using note dropout value: ${dropout}`)
 
-const noteDropout = 1;
-const threshold = 0.5
 const pitchMapping = pitchToIndexMap(
   DRUM_PITCH_CLASSES["pitch"],
   DRUM_PITCH_CLASSES["index"]
@@ -34,12 +39,28 @@ function predict(model) {
   let pattern = inputOnsets.concatenate(velocities, 2)
   pattern = pattern.concatenate(offsets, 2)
 
-  model.forward(pattern, inputOnsets.shape, noteDropout).then((output) => {
-    outputOnsets = applyOnsetThreshold(output.onsets, inputOnsets.shape, threshold).tensor();
-    outputVelocities = new Pattern(output.velocities, inputOnsets.shape).tensor();
-    outputOffsets = new Pattern(output.offsets, inputOnsets.shape).tensor();
-    console.log("Done.");
+  model.forward(pattern, inputOnsets.shape, dropout).then(async(output) => {
+    [outputOnsets, outputVelocities, outputOffsets] = preprocess(
+      output.onsets, output.velocities, output.offsets
+    )
+    const savePath = filePath.slice(0, -4) + ".groove" + `-${Math.floor(Date.now() / 1000)}`  + ".mid"
+    await writeMidiFile(outputOnsets, outputVelocities, outputOffsets, savePath)
+    console.log(`Wrote grooved rhythm to ${savePath}.`);
   })
+}
+
+function preprocess(onsets, velocities, offsets) {
+  outputOnsets = applyOnsetThreshold(onsets, inputOnsets.shape, threshold);
+  
+  const maskedVelocities = Array.from(velocities.data).map((v, i) => {
+    return v * outputOnsets.data[i];
+  })
+  const sigmVelocities = maskedVelocities.map(v => {
+    return (1 / (1 + Math.exp(v * -5)) - 0.5) * 2
+  })
+  outputVelocities = new Pattern(sigmVelocities, outputOnsets.shape)
+  outputOffsets = new Pattern(new Float32Array(outputVelocities.size), inputOnsets.shape);
+  return [outputOnsets, outputVelocities, outputOffsets]
 }
 
 readMidiFile(filePath, pitchMapping)
