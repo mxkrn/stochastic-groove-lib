@@ -33,4 +33,4 @@ class PatternHistory {
   }
 }
 
-export default PatternHistory
+export { PatternHistory }

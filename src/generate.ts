@@ -1,5 +1,5 @@
 import { Tensor } from 'onnxruntime'
-import ONNXModel from './model'
+import { ONNXModel } from './model'
 import { Pattern, PatternSizeError } from './pattern'
 import {
   LOOP_DURATION,
@@ -334,6 +334,4 @@ function applyOnsetThreshold (onsets: Tensor, dims: number[], threshold: number)
   return new Pattern(outputArray, dims)
 }
 
-export { applyOnsetThreshold, PatternDataMatrix }
-
-export default Generator
+export { Generator, applyOnsetThreshold, PatternDataMatrix }

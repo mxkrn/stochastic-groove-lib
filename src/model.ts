@@ -17,7 +17,7 @@ interface ModelMeta {
 class ModelType {
   _name: string
   private readonly _models: Record<string, ModelMeta>
-  private readonly MODEL_DIR: string = path.dirname(__dirname) + '/assets/models/'
+  _modelDir: string = path.dirname(__dirname) + '/assets/models/'
   private readonly _meta: ModelMeta
 
   constructor (name: string) {
@@ -26,14 +26,14 @@ class ModelType {
 
     this._models.syncopate = {
       name: 'syncopate',
-      path: this.MODEL_DIR + 'syncopate.onnx',
+      path: this.modelDir + 'syncopate.onnx',
       latentSize: 2,
       channels: CHANNELS,
       loopDuration: LOOP_DURATION
     }
     this._models.groove = {
       name: 'groove',
-      path: this.MODEL_DIR + 'groove.onnx',
+      path: this.modelDir + 'groove.onnx',
       latentSize: 32,
       channels: CHANNELS,
       loopDuration: LOOP_DURATION
@@ -50,6 +50,14 @@ class ModelType {
 
   set name (value: string) {
     this._name = value
+  }
+
+  get modelDir (): string {
+    return this._modelDir
+  }
+
+  set modelDir (value: string) {
+    this._modelDir = value;
   }
 
   get meta (): ModelMeta {
@@ -113,4 +121,4 @@ class ONNXModel {
   }
 }
 
-export default ONNXModel
+export { ONNXModel }

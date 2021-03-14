@@ -1,6 +1,6 @@
 import assert from "assert"
 
-import PatternHistory from "../src/history"
+import { PatternHistory } from "../src/history"
 import { Pattern } from "../src/pattern";
 import { arraysEqual } from "./helpers"
 

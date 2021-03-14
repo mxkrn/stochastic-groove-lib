@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import ONNXModel from "../src/model";
+import { ONNXModel } from "../src/model";
 import { CHANNELS, LOOP_DURATION } from "../src/constants";
 import { testPattern } from "./helpers";
 

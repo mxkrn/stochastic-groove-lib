@@ -4,10 +4,10 @@ import { CHANNELS, LOOP_DURATION, MAX_ONSET_THRESHOLD, MIN_ONSET_THRESHOLD, NOTE
 
 import { Pattern, PatternSizeError } from "../src/pattern"
 import { PatternDataMatrix, applyOnsetThreshold } from "../src/generate"
-import Generator from "../src/generate";
+import { Generator } from "../src/generate";
 import { testPattern, arraysEqual } from "./helpers"
 import { linspace } from "../src/util";
-import ONNXModel from "../src/model";
+import { ONNXModel } from "../src/model";
 import { Tensor } from "onnxruntime";
 
 describe("PatternDataMatrix", function() {
