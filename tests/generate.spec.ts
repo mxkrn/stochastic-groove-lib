@@ -67,10 +67,10 @@ describe("PatternDataMatrix", function() {
 })
 
 describe("Generator", function () {
-  const onsetsData = Float32Array.from({ length: 144 }, _ => 1.)
+  const onsetsData = Float32Array.from({ length: LOOP_DURATION * CHANNELS }, _ => 1.)
   const velocitiesData = Float32Array.from(onsetsData).fill(0.5)
   const offsetsData = Float32Array.from(onsetsData).fill(0.)
-  const expectedDims = [1, 16, 9]
+  const expectedDims = [1, LOOP_DURATION, CHANNELS]
 
   it("constructs, sets and gets attributes", async function() {
 
@@ -116,13 +116,13 @@ describe("Generator", function () {
     const channels = 10
     generator.channels = 10
     assert.strictEqual(generator.channels, channels)
-    assert.ok(arraysEqual(generator.outputShape, [1, 16, 10]))
+    assert.ok(arraysEqual(generator.outputShape, [1, LOOP_DURATION, channels]))
 
     assert.strictEqual(generator.loopDuration, LOOP_DURATION)
-    const loopDuration = 32
+    const loopDuration = 33
     generator.loopDuration = loopDuration
     assert.strictEqual(generator.loopDuration, loopDuration)
-    assert.ok(arraysEqual(generator.outputShape, [1, 32, 10]))
+    assert.ok(arraysEqual(generator.outputShape, [1, loopDuration, channels]))
   }),
   it("returns empty matrix before running", async function() {
     const generator = await Generator.build(
