@@ -3,7 +3,7 @@ const path = require("path");
 const parseArgs = require("minimist");
 
 const { pitchToIndexMap } = require("../dist/util");
-const { DRUM_PITCH_CLASSES } = require("../dist/constants");
+const { DRUM_PITCH_CLASSES, LOCAL_MODEL_DIR } = require("../dist/constants");
 const { Pattern } = require("../dist/pattern");
 const { readMidiFile, writeMidiFile } = require("../dist/midi");
 const ONNXModel = require("../dist/model").default;
@@ -70,9 +70,10 @@ readMidiFile(filePath, pitchMapping)
     inputOffsets = output[2];
 
     console.log("Loaded file.");
-    ONNXModel.build("groove").then((model) => predict(model));
+    ONNXModel.build("groove", LOCAL_MODEL_DIR).then((model) => predict(model));
   })
   .catch((e) => {
     console.log("Something went wrong: ", e)
   })
+
 

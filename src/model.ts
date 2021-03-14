@@ -1,5 +1,3 @@
-import path from 'path'
-
 import { InferenceSession, Tensor } from 'onnxruntime'
 import { LOOP_DURATION, CHANNELS } from './constants'
 import { zeroArray } from './util'
@@ -17,12 +15,13 @@ interface ModelMeta {
 class ModelType {
   _name: string
   private readonly _models: Record<string, ModelMeta>
-  _modelDir: string = path.dirname(__dirname) + '/assets/models/'
+  _modelDir: string
   private readonly _meta: ModelMeta
 
-  constructor (name: string) {
+  constructor (name: string, modelDir: string) {
     this._name = name
     this._models = {}
+    this._modelDir = modelDir
 
     this._models.syncopate = {
       name: 'syncopate',
@@ -57,7 +56,7 @@ class ModelType {
   }
 
   set modelDir (value: string) {
-    this._modelDir = value;
+    this._modelDir = value
   }
 
   get meta (): ModelMeta {
@@ -85,17 +84,18 @@ class ONNXModel {
   }
 
   static async build (
-    modelName: string
+    modelName: string,
+    modelDir: string
   ): Promise<ONNXModel> {
     /**
      * @filePath Path to ONNX model
      */
-    const modelMeta = new ModelType(modelName).meta
+    const modelMeta = new ModelType(modelName, modelDir).meta
     try {
       const session = await InferenceSession.create(modelMeta.path)
       return new ONNXModel(session, modelMeta)
     } catch (e) {
-      throw new Error(`failed to load ONNX model: ${stringify(e)}`)
+      throw new Error(`failed to load ONNX model from ${modelMeta.path}: ${stringify(e)}`)
     }
   }
 

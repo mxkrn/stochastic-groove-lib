@@ -1,6 +1,6 @@
 import assert from "assert"
 import { performance } from "perf_hooks";
-import { CHANNELS, LOOP_DURATION, MAX_ONSET_THRESHOLD, MIN_ONSET_THRESHOLD, NOTE_DROPOUT, NUM_SAMPLES } from "../src/constants";
+import { CHANNELS, LOCAL_MODEL_DIR, LOOP_DURATION, MAX_ONSET_THRESHOLD, MIN_ONSET_THRESHOLD, NOTE_DROPOUT, NUM_SAMPLES } from "../src/constants";
 
 import { Pattern, PatternSizeError } from "../src/pattern"
 import { PatternDataMatrix, applyOnsetThreshold } from "../src/generate"
@@ -77,7 +77,8 @@ describe("Generator", function () {
     const generator = await Generator.build(
         onsetsData,
         velocitiesData,
-        offsetsData
+        offsetsData,
+        LOCAL_MODEL_DIR
     )
 
     // assert.strictEqual(typeof generator.model, ONNXModel)
@@ -128,7 +129,8 @@ describe("Generator", function () {
     const generator = await Generator.build(
         onsetsData,
         velocitiesData,
-        offsetsData
+        offsetsData,
+        LOCAL_MODEL_DIR
     )
     assert.ok(arraysEqual(generator.onsets.outputShape, [1, LOOP_DURATION, CHANNELS]))
     assert.ok(arraysEqual(generator.velocities.outputShape, [1, LOOP_DURATION, CHANNELS]))
@@ -139,7 +141,8 @@ describe("Generator", function () {
     const generator = await Generator.build(
       onsetsData,
       velocitiesData,
-      offsetsData
+      offsetsData,
+      LOCAL_MODEL_DIR
     )
     const dims = [1, LOOP_DURATION, CHANNELS]
     const onsetsPattern = new Pattern(onsetsData, dims)
@@ -150,7 +153,8 @@ describe("Generator", function () {
     const generator = await Generator.build(
       onsetsData,
       velocitiesData,
-      offsetsData
+      offsetsData,
+      LOCAL_MODEL_DIR
     )
     const st = performance.now();
     await generator.run();
@@ -182,5 +186,4 @@ describe("applyOnsetThreshold", function() {
     gotPattern = applyOnsetThreshold(new Tensor("float32", data, expectedDims), expectedDims, 0.4)
     expected = Array.from({ length: 8 }, _ => 0.)
     assert.ok(arraysEqual(Array.from(gotPattern.data), expected))
-  })
-})
+  }) })

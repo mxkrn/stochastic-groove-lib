@@ -16,6 +16,7 @@ const MIN_ONSET_THRESHOLD = 0.3
 const MAX_ONSET_THRESHOLD = 0.7
 const NUM_SAMPLES = 400
 const NOTE_DROPOUT = 0.5
+const LOCAL_MODEL_DIR = path.dirname(__dirname) + '/assets/models/'
 
 export {
   DRUM_PITCH_CLASSES,
@@ -28,5 +29,6 @@ export {
   MIN_ONSET_THRESHOLD,
   MAX_ONSET_THRESHOLD,
   NUM_SAMPLES,
-  NOTE_DROPOUT
+  NOTE_DROPOUT,
+  LOCAL_MODEL_DIR
 }

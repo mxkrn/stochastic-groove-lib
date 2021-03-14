@@ -235,6 +235,7 @@ class Generator {
     onsets: Float32Array,
     velocities: Float32Array,
     offsets: Float32Array,
+    modelDir: string,
     minOnsetThreshold: number = MIN_ONSET_THRESHOLD,
     maxOnsetThreshold: number = MAX_ONSET_THRESHOLD,
     numSamples: number = NUM_SAMPLES,
@@ -243,8 +244,8 @@ class Generator {
     sequenceLength: number = LOOP_DURATION
   ): Promise<Generator> {
     try {
-      const syncopateModel = await ONNXModel.build('syncopate')
-      const grooveModel = await ONNXModel.build('groove')
+      const syncopateModel = await ONNXModel.build('syncopate', modelDir)
+      const grooveModel = await ONNXModel.build('groove', modelDir)
       return new Generator(
         syncopateModel,
         grooveModel,
