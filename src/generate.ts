@@ -289,8 +289,8 @@ class Generator {
      */
     const syncopateModel = this.syncopateModel
     const grooveModel = this.grooveModel
-    const noteDropouts = linspace(this._minNoteDropout, this._maxNoteDropout, this.axisLength)
-    const onsetThresholds = linspace(this._minOnsetThreshold, this._maxOnsetThreshold, this.axisLength)
+    const noteDropouts = linspace(this.minNoteDropout, this.maxNoteDropout, this.axisLength)
+    const onsetThresholds = linspace(this.minOnsetThreshold, this.maxOnsetThreshold, this.axisLength)
 
     for (let i = 0; i < this.axisLength; i++) {
       const threshold = onsetThresholds[i]
