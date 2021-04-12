@@ -35,7 +35,7 @@ describe("ONNXModel", function () {
   });
   it("groove model is constructed correctly", async function () {
     const model = await ONNXModel.build("groove", LOCAL_MODEL_DIR);
-    assert.ok(model.meta.latentSize == 32);
+    assert.ok(model.meta.latentSize == 8);
     assert.ok(model.meta.channels == CHANNELS);
     assert.ok((model.meta.loopDuration == LOOP_DURATION));
   });
