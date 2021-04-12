@@ -33,7 +33,7 @@ class ModelType {
     this._models.groove = {
       name: 'groove',
       path: this.modelDir + 'groove.onnx',
-      latentSize: 32,
+      latentSize: 8,
       channels: CHANNELS,
       loopDuration: LOOP_DURATION
     }
