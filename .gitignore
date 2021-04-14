@@ -4,3 +4,5 @@ dist
 .nyc_output
 coverage
 *.onnx
+.env
+test.mid

@@ -1,5 +1,7 @@
+import fs from 'fs'
+
 import { InferenceSession, Tensor } from 'onnxruntime'
-import { LOOP_DURATION, CHANNELS } from './constants'
+import { LOCAL_MODEL_DIR } from './constants'
 import { zeroArray } from './util'
 import { Pattern } from './pattern'
 import { stringify } from 'querystring'
@@ -10,6 +12,11 @@ interface ModelMeta {
   latentSize: number
   channels: number
   loopDuration: number
+}
+
+function loadMeta (name: string): ModelMeta {
+  const data = fs.readFileSync(LOCAL_MODEL_DIR + `${name}.json`, 'utf-8')
+  return JSON.parse(data)
 }
 
 class ModelType {
@@ -23,20 +30,11 @@ class ModelType {
     this._models = {}
     this._modelDir = modelDir
 
-    this._models.syncopate = {
-      name: 'syncopate',
-      path: this.modelDir + 'syncopate.onnx',
-      latentSize: 2,
-      channels: CHANNELS,
-      loopDuration: LOOP_DURATION
-    }
-    this._models.groove = {
-      name: 'groove',
-      path: this.modelDir + 'groove.onnx',
-      latentSize: 8,
-      channels: CHANNELS,
-      loopDuration: LOOP_DURATION
-    }
+    this._models.syncopate = loadMeta('syncopate')
+    this._models.groove = loadMeta('groove')
+    this._models.syncopate.path = this.modelDir + 'syncopate.onnx'
+    this._models.groove.path = this.modelDir + 'groove.onnx'
+
     this._meta = this._models[this._name]
     if (this._meta === undefined) {
       throw new Error(`Invalid model name: ${this._name}`)

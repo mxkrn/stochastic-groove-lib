@@ -16,7 +16,12 @@ const MIN_ONSET_THRESHOLD = 0.3
 const MAX_ONSET_THRESHOLD = 0.7
 const NUM_SAMPLES = 400
 const NOTE_DROPOUT = 0.5
-const LOCAL_MODEL_DIR = path.dirname(__dirname) + '/assets/models/'
+
+let ENV: string = 'production'
+if (typeof process.env.REGROOVE_ENV === 'string') {
+  ENV = process.env.REGROOVE_ENV
+}
+const LOCAL_MODEL_DIR = path.dirname(__dirname) + `/regroove-models/${ENV}/`
 
 export {
   DRUM_PITCH_CLASSES,
